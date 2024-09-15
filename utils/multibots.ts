@@ -1,10 +1,26 @@
-import { Telegraf } from "telegraf";
+import { Telegraf, session } from "telegraf";
 import axios from "axios";
 import { logger } from "./logger";
 import { prisma } from "../db/prisma";
 import { localDB } from "../db/local";
 import start from '../telegram/middleware/start'
-// import fetch from 'node-fetch'
+import actions from '../telegram/actions/index'
+import commands from '../telegram/commands/index'
+import reputation from '../telegram/commands/reputation'
+import filtros from '../telegram/commands/filtros'
+import urban from '../telegram/commands/ud'
+import love from '../telegram/commands/love'
+import inline from '../telegram/inline/inline'
+import replacer from '../telegram/commands/replace'
+import polls from '../telegram/commands/polls'
+import admin from '../telegram/commands/admin'
+import createUser from '../telegram/commands/createUser'
+import loggerMiddleware from '../telegram/middleware/commandLogger'
+import ban from '../telegram/commands/ban'
+import qr from '../telegram/commands/qr'
+import i18n from '../telegram/middleware/i18n'
+import stickers from '../telegram/commands/stickers'
+import type { MyContext } from '../telegram/interfaces'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN!;
 
@@ -26,9 +42,26 @@ export const createBot = async (token: string) => {
     logger.info('calling createBot')
     try {
         logger.info('starting new bot')
-        const bot = new Telegraf(token)
+        const bot = new Telegraf<MyContext>(token)
         bot
+            .use(session())
             .use(start)
+            .use(createUser)
+            .use(loggerMiddleware)
+            .use(i18n)
+            .use(admin)
+            .use(ban)
+            .use(actions)
+            .use(commands)
+            .use(reputation)
+            .use(urban)
+            .use(love)
+            .use(inline)
+            .use(replacer)
+            .use(polls)
+            .use(qr)
+            .use(stickers)
+            .use(filtros)
 
         bot.launch({
             webhook: {

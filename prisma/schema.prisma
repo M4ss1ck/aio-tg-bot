@@ -15,3 +15,45 @@ model Bot {
   token String @unique
   owner String
 }
+
+model User {
+  id    Int      @id @default(autoincrement())
+  tg_id String   @unique
+  rep   Int
+  nick  String
+  fecha DateTime
+  rango String?
+  lang  String   @default("es")
+}
+
+model Filter {
+  id        Int     @id @default(autoincrement())
+  filter    String
+  tipo      String
+  respuesta String
+  global    Boolean @default(false)
+  chat      String  @default("global")
+
+  @@unique([filter, chat])
+}
+
+model Poll {
+  id       String   @id
+  chat     Int
+  question String
+  options  Option[]
+}
+
+model Option {
+  id         String @id @default(uuid())
+  name       String
+  encuestaId String
+  encuesta   Poll   @relation(fields: [encuestaId], references: [id], onDelete: Cascade)
+}
+
+model Dictionary {
+  id       String   @id @default(uuid())
+  query    String   @unique
+  response String
+  date     DateTime @default(now())
+}
