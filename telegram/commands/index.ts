@@ -177,13 +177,6 @@ commands.command(['c', 'calc'], (ctx) => {
     }
   }
 })
-commands.command(['start', 'jelou'], (ctx) => {
-  ctx.replyWithHTML(
-    ctx.t('<b>Hola, {{name}}!</b>\nEnvía <code>/ayuda</code> para ver algunas opciones', {
-      name: ctx.message.from.first_name,
-    }),
-  )
-})
 
 commands.command(['ayuda', 'help'], (ctx) => {
   ctx.replyWithHTML(
