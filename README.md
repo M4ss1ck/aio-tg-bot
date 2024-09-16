@@ -4,7 +4,7 @@
 
 This is what you get when you combine [Bot Manager](https://github.com/M4ss1ck/bot-manager) with [MassickBot v2](https://github.com/M4ss1ck/tg-telegraf-bot)
 
-Telegraf bot template with WebApp support and a `/clone` command to allow users to have their own copy.
+Full-featured constantly-evolving Telegraf bot with WebApp support and a `/clone` command to allow users to have their own copy.
 
 ## Stack
 
