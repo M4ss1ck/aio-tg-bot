@@ -101,22 +101,10 @@ commands.command('info', async (ctx) => {
     }
   }
   else {
-    const msgInfo = JSON.stringify(ctx.message, null, 2)
-    const text = `<b>${ctx.t('Información del mensaje')}:</b>\n${msgInfo}`
-    if (text.length < 4096) {
-      ctx.replyWithHTML(text, {
-        reply_to_message_id: ctx.message.message_id,
-      })
-    }
-    else {
-      const chunks = Math.ceil(text.length / 4096)
-      for (let i = 0; i < chunks; i++) {
-        const index = 4096 * i
-        await ctx.replyWithHTML(text.substring(index, index + 4096), {
-          reply_to_message_id: ctx.message.message_id,
-        }).catch(console.log)
-      }
-    }
+    const text = `<b>${ctx.t('Información del mensaje')}:</b>\nName: ${ctx.message.from.first_name}\nUsername: ${ctx.message.from.username ? '@' + ctx.message.from.username : '-'}\nId: <code>${ctx.message.from.id}</code>\nChat Id: <code>${ctx.message.chat.id}</code>`
+    ctx.replyWithHTML(text, {
+      reply_to_message_id: ctx.message.message_id,
+    })
   }
 })
 
