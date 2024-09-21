@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { HomeCards } from './HomeCards';
+import LettersAnimation from './LettersAnimation';
 
 declare global {
     interface Window {
@@ -68,7 +70,9 @@ export function HomeContent() {
     }, [])
 
     const Greetings = () => state.userProfile.first_name ? <div className="mb-4 text-lg font-bold text-slate-400">
-        {`Welcome, ${state.userProfile.first_name}${state.userProfile.last_name ? ` ${state.userProfile.last_name}` : ''}`}
+        <LettersAnimation
+            title={`Welcome, ${state.userProfile.first_name}${state.userProfile.last_name ? ` ${state.userProfile.last_name}` : ''}`}
+        />
     </div> : null
 
     return (
@@ -80,9 +84,7 @@ export function HomeContent() {
                 {state.loginStatus === 1 && <div>
                     <Greetings />
                 </div>}
-                <footer className="absolute text-lg font-bold text-telegram-text bottom-1">
-                    Template WebApp bootstrapped using NextJS, Tailwind CSS and Telegraf.
-                </footer>
+                <HomeCards />
             </div>
         </div>
     )
