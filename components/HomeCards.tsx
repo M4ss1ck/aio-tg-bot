@@ -7,7 +7,7 @@ import Me from "../public/images/square_me.png"
 export const HomeCards = () => {
     return (
         <section className="p-6 my-6">
-            <div className="container grid grid-cols-1 gap-6 mx-auto sm:grid-cols-2 xl:grid-cols-4">
+            <div className="container grid grid-cols-1 gap-6 mx-auto">
                 <Link href={"/bots"}>
                     <Card title="My Bots" icon={
                         <svg xmlns="http://www.w3.org/2000/svg" width={64} height={64} viewBox="0 0 32 32">

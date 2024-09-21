@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
     return (
         <html>
-            <body className="bg-telegram-bg">
+            <body className="bg-telegram-bg text-telegram-text">
                 {children}
                 <Script
                     src="https://telegram.org/js/telegram-web-app.js"

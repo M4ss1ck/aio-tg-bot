@@ -10,7 +10,7 @@ const LettersAnimation = ({ title }: { title: string }) => {
         for (let i = 0; i < letters.length; i++) {
             const letter = letters[i]
             letter.style.visibility = 'visible'
-            duration += 400
+            duration += 100
             letter.animate(
                 [
                     { transform: `translateY(-100vh) scale(0,0)` },
@@ -23,7 +23,7 @@ const LettersAnimation = ({ title }: { title: string }) => {
     return (
         <h1
             aria-label={title}
-            className="absolute z-10 flex flex-wrap items-center justify-center text-2xl text-center uppercase md:text-5xl lg:text-7xl"
+            className="z-10 flex flex-wrap items-center justify-center text-2xl text-center uppercase md:text-5xl"
         >
             {array.map((letter, index) => {
                 return (
@@ -31,7 +31,7 @@ const LettersAnimation = ({ title }: { title: string }) => {
                         key={index}
                         className={
                             letter === " "
-                                ? "min-w-[1rem] mr-auto w-full"
+                                ? "min-w-[1rem]"
                                 : "animateletter transition duration-300 hover:skew-y-12 hover:even:-skew-y-12 hover:-translate-y-16 hover:even:-translate-y-14 hover:scale-150 text-primario dark:text-secundario min-w-[1rem] cursor-default"
                         }
                         style={{ visibility: 'hidden' }}

@@ -69,7 +69,7 @@ export function HomeContent() {
         }
     }, [])
 
-    const Greetings = () => state.userProfile.first_name ? <div className="mb-4 text-lg font-bold text-slate-400">
+    const Greetings = () => state.userProfile.first_name ? <div className="mb-4 text-lg font-bold text-telegram-text">
         <LettersAnimation
             title={`Welcome, ${state.userProfile.first_name}${state.userProfile.last_name ? ` ${state.userProfile.last_name}` : ''}`}
         />
