@@ -4,7 +4,7 @@ import '../styles/globals.css'
 import { Footer } from '../components/Footer';
 
 export const metadata: Metadata = {
-    title: 'Bot Manager',
+    title: 'Massick Bot v3',
     description: 'Telegram bot with NextJS app',
 }
 
@@ -17,11 +17,11 @@ export default function RootLayout({
         <html>
             <body className="bg-telegram-bg text-telegram-text">
                 {children}
+                <Footer />
                 <Script
                     src="https://telegram.org/js/telegram-web-app.js"
                     strategy="beforeInteractive"
                 />
-                <Footer />
             </body>
         </html>
     )

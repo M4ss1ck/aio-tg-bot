@@ -3,7 +3,7 @@ import Me from "../../public/images/square_me.png"
 import { Back } from "../../components/Back"
 
 export default function Page() {
-    return <main className="flex flex-col items-center justify-center w-full h-full min-h-screen">
+    return <main className="flex flex-col items-center justify-center w-full h-full min-h-screen gap-2">
         <Image src={Me} alt="me" className="rounded-full" />
         <h1 className="text-2xl">My name is <strong>NOT</strong> Massick</h1>
         <p>That&apos;s not even my lastname</p>
