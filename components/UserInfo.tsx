@@ -17,7 +17,10 @@ export const UserInfo = () => {
             }
         }
     }, []);
-    return <>
-        <pre>{userData}</pre>
-    </>
+    return (<div className='p-4'>
+        <h2 className='text-4xl font-bold'>Your Data</h2>
+        <pre className='p-3 overflow-x-auto rounded-lg shadow-lg'>
+            {JSON.stringify(JSON.parse(userData), null, 2)}
+        </pre>
+    </div>)
 }

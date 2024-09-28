@@ -26,12 +26,16 @@ export const HomeCards = () => {
                         </svg>
                     } />
                 </Link>
-                <Link href={"/me"}>
+                <Link href={"/you"}>
                     <Card title="About You" icon={
-                        <svg xmlns="http://www.w3.org/2000/svg" width={64} height={64} viewBox="0 0 24 24">
-                            <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} color="currentColor">
-                                <path d="M20 14.5v-8c0-1.886 0-2.828-.586-3.414S17.886 2.5 16 2.5H8c-1.886 0-2.828 0-3.414.586S4 4.614 4 6.5v8m-.502 1.015L4.02 14.5h15.932l.55 1.015c1.443 2.662 1.803 3.993 1.254 4.989s-2.002.996-4.91.996H7.154c-2.909 0-4.363 0-4.911-.996c-.549-.996-.19-2.327 1.254-4.989"></path>
-                                <path d="m15.5 7l.92.793c.387.333.58.5.58.707s-.193.374-.58.707L15.5 10m-7-3l-.92.793c-.387.333-.58.5-.58.707s.193.374.58.707L8.5 10M13 6l-2 5"></path>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64px" height="64px" viewBox="0 0 24 24">
+                            <g fill="none" stroke="currentColor" strokeDasharray={20} strokeDashoffset={20} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}>
+                                <path d="M6 19v-1c0 -2.21 1.79 -4 4 -4h4c2.21 0 4 1.79 4 4v1">
+                                    <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0"></animate>
+                                </path>
+                                <path d="M12 11c-1.66 0 -3 -1.34 -3 -3c0 -1.66 1.34 -3 3 -3c1.66 0 3 1.34 3 3c0 1.66 -1.34 3 -3 3Z">
+                                    <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="20;0"></animate>
+                                </path>
                             </g>
                         </svg>
                     } />
