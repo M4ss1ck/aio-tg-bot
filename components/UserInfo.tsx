@@ -17,10 +17,10 @@ export const UserInfo = () => {
             }
         }
     }, []);
-    return (<div className='p-4'>
+    return (<main className="flex flex-col items-center justify-center w-full h-full min-h-screen">
         <h2 className='text-4xl font-bold'>Your Data</h2>
         {userData ? <pre className='p-3 overflow-x-auto rounded-lg shadow-lg'>
             {JSON.stringify(JSON.parse(userData), null, 2)}
         </pre> : <p className='text-lg font-light'>oops</p>}
-    </div>)
+    </main>)
 }
