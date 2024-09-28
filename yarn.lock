@@ -612,6 +612,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/telegram-web-app@^7.10.0":
+  version "7.10.0"
+  resolved "https://registry.npmjs.org/@types/telegram-web-app/-/telegram-web-app-7.10.0.tgz"
+  integrity sha512-vi66vQwPmbK7o89mwiKVLtCzWxmpLR7+GVOaP7QDqZqhIeVKH8LKLzePs4qdHvqLZFgvw+Q6dLAzPFuiOj+kXw==
+
 "@typescript-eslint/eslint-plugin@^5.4.2 || ^6.0.0 || 7.0.0 - 7.2.0":
   version "7.2.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-7.2.0.tgz"

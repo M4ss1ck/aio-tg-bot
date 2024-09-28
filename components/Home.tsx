@@ -4,12 +4,6 @@ import { useSearchParams } from 'next/navigation'
 import { HomeCards } from './HomeCards';
 import LettersAnimation from './LettersAnimation';
 
-declare global {
-    interface Window {
-        Telegram?: any;
-    }
-}
-
 export function HomeContent() {
     const searchParams = useSearchParams()
     const params = searchParams.toString()
