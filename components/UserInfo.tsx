@@ -1,6 +1,7 @@
 'use client'
-
+import Link from 'next/link';
 import { useState, useEffect } from 'react'
+import { Back } from './Back';
 
 export const UserInfo = () => {
     const [userData, setUserData] = useState<string>("");
@@ -18,9 +19,12 @@ export const UserInfo = () => {
         }
     }, []);
     return (<main className="flex flex-col items-center justify-center w-full h-full min-h-screen">
-        <h2 className='text-4xl font-bold'>Your Data</h2>
+        <Link href={"/"}>
+            <h1 className='p-4 text-4xl'>Your Data</h1>
+        </Link>
         {userData ? <pre className='p-3 overflow-x-auto rounded-lg shadow-lg'>
             {JSON.stringify(JSON.parse(userData), null, 2)}
         </pre> : <p className='text-lg font-light'>oops</p>}
+        <Back />
     </main>)
 }
