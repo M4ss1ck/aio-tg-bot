@@ -6,7 +6,7 @@ import { localDB } from "../../db/local";
 
 const gallery = new Composer<MyContext>()
 
-gallery.command('gallery', async (ctx) => {
+gallery.command(['gallery', 'g'], async (ctx) => {
     const galleryURL = `https://${domain}/gallery/${ctx.from.id}`
     if (ctx.message.reply_to_message && 'photo' in ctx.message.reply_to_message) {
         // get how many photos the user has
