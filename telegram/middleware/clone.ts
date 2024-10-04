@@ -1,5 +1,4 @@
 import { Composer, Markup } from 'telegraf'
-import { localDB } from '../../db/local'
 import { prisma } from '../../db/prisma'
 import { logger } from '../../utils/logger'
 import { createBot, setWH } from '../../utils/multibots'
@@ -29,7 +28,6 @@ clone.command('clone', async (ctx) => {
                         }
                     })
                     .then(() => {
-                        // localDB.set(token, bot)
                         ctx.replyWithHTML('Bot created successfully!\nPress button below to set webhook',
                             Markup.inlineKeyboard([
                                 Markup.button.callback('Set Webhook', `setwh_${token}`)
