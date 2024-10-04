@@ -20,6 +20,7 @@ import ban from './commands/ban'
 import qr from './commands/qr'
 import i18n from './middleware/i18n'
 import stickers from './commands/stickers'
+import gallery from './commands/gallery'
 import { getUsers } from './global/data'
 import type { MyContext } from './interfaces'
 
@@ -28,7 +29,7 @@ global.USUARIOS = await getUsers()
 
 export const bot = new Telegraf<MyContext>(token)
 
-localDB.set('currentToken', 'default')
+localDB.set('currentToken', process.env.BOT_TOKEN)
 
 bot
     .use(session())
@@ -42,6 +43,7 @@ bot
     .use(actions)
     .use(commands)
     .use(reputation)
+    .use(gallery)
     .use(urban)
     .use(love)
     .use(inline)
