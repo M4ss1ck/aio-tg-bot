@@ -29,7 +29,7 @@ global.USUARIOS = await getUsers()
 
 export const bot = new Telegraf<MyContext>(token)
 
-localDB.set('currentToken', process.env.BOT_TOKEN)
+localDB.set('currentToken', token)
 
 bot
     .use(session())

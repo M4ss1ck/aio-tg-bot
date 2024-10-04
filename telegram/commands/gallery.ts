@@ -3,6 +3,7 @@ import type { MyContext } from "../interfaces";
 import { prisma } from "../../db/prisma";
 import { domain, photoLimitPerUser } from "../../config/constants";
 import { localDB } from "../../db/local";
+import { logger } from "../../utils/logger";
 
 const gallery = new Composer<MyContext>()
 
@@ -37,14 +38,20 @@ gallery.command(['gallery', 'g'], async (ctx) => {
                 caption: msg.caption,
                 width: tgImage.width,
                 height: tgImage.height,
-                token: token ?? process.env.BOT_TOKEN!,
+                token: token ?? process.env.TOKEN!,
             }
         })
-
-        // console.log(file)
-        ctx.reply(`Photo added to your carousel: ${galleryURL}`, Markup.inlineKeyboard([
-            Markup.button.webApp('Open Gallery', galleryURL)
-        ]));
+            .then(() => {
+                return ctx.reply(`Photo added to your carousel: ${galleryURL}`,
+                    Markup.inlineKeyboard([
+                        Markup.button.webApp('Open Gallery', galleryURL)
+                    ]));
+            })
+            .catch((err) => {
+                logger.info('Error in gallery command')
+                logger.error(err)
+                return ctx.reply('Error adding photo to gallery')
+            })
     } else {
         ctx.reply(`this command is used replying an image in order to add it to your personal gallery at ${galleryURL}`)
     }
