@@ -1,4 +1,4 @@
-
+'use client'
 import Carousel from 'react-gallery-carousel';
 import 'react-gallery-carousel/dist/index.css';
 
