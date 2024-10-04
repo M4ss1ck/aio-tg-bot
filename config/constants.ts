@@ -1,6 +1,8 @@
 export const token = process.env.TOKEN ?? ''
 export const domain = String(process.env.NEXT_PUBLIC_DOMAIN ?? '').replace(/^http(s)?:\/\//, "")
 export const adminId = process.env.ADMIN_ID ?? ''
+export const tgAPI = process.env.TG_API ?? 'https://api.telegram.org'
+export const photoLimitPerUser = 20
 
 export const projectList = [
     'calc.xdc',
