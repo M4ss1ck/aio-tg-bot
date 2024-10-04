@@ -17,13 +17,14 @@ model Bot {
 }
 
 model User {
-  id    Int      @id @default(autoincrement())
-  tg_id String   @unique
-  rep   Int
-  nick  String
-  fecha DateTime
-  rango String?
-  lang  String   @default("es")
+  id     Int      @id @default(autoincrement())
+  tg_id  String   @unique
+  rep    Int
+  nick   String
+  fecha  DateTime
+  rango  String?
+  lang   String   @default("es")
+  photos Photo[]
 }
 
 model Filter {
@@ -56,4 +57,15 @@ model Dictionary {
   query    String   @unique
   response String
   date     DateTime @default(now())
+}
+
+model Photo {
+  id      String  @id @default(uuid())
+  user    User    @relation(fields: [userId], references: [tg_id])
+  userId  String
+  path    String
+  token   String
+  caption String?
+  width   Int?
+  height  Int?
 }
