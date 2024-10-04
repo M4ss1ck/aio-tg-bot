@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { domain } from '../config/constants'
 
 export const signatureFunc = async (msgId: number, chatId: number, userId: number, joinTime: number): Promise<string> => {
     let signOri = `${msgId}, ${chatId}, ${userId}, ${joinTime}`
@@ -126,4 +127,8 @@ export const timeToNext = (time: number) => {
 
 export function roundToAny(num: number, n = 2) {
     return +(`${Math.round(parseInt(`${num}e+${n}`))}e-${n}`)
+}
+
+export const pathToTgLink = (path: string, token: string) => {
+    return `https://${domain}/file/bot${token}/${path}`
 }
