@@ -82,5 +82,6 @@
   "This action is not available": "This action is not available",
   "You AFK {{reason}}": "You are now AFK with the reason: {{reason}}",
   "You are now AFK": "You are now AFK",
-  "{{user}} is no longer AFK after {{time}}": "{{user}} is no longer AFK after {{time}}"
+  "{{user}} is no longer AFK after {{time}}": "{{user}} is no longer AFK after {{time}}",
+  "{{user}} is AFK since {{time}} {{reason}}": "{{user}} has been AFK for {{time}}\nReason: {{reason}}"
 }

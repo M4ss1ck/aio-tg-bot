@@ -25,6 +25,7 @@ afk.command('afk', async (ctx) => {
     })
     const text = msg ? ctx.t('You AFK {{reason}}', { reason: msg }) : ctx.t("You are now AFK")
     return ctx.replyWithHTML(text)
+
 })
 
 afk.use(async (ctx, next) => {
@@ -50,7 +51,7 @@ afk.use(async (ctx, next) => {
             if (afk) {
                 const date = new Date(afk.date)
                 const diff = convertMsToTime(new Date().getTime() - date.getTime())
-                ctx.replyWithHTML(ctx.t("{{user}} is AFK since {{time}}\nReason: {{reason}}", { user: ctx.message.reply_to_message.from.first_name, time: diff, reason: afk.msg }))
+                ctx.replyWithHTML(ctx.t("{{user}} is AFK since {{time}} {{reason}}", { user: ctx.message.reply_to_message.from.first_name, time: diff, reason: afk.msg }))
             }
         } else if (ctx.message && 'text' in ctx.message && usernameRegexp.test(ctx.message.text)) {
             const usernames = ctx.message.text.match(usernameRegexp)
@@ -60,7 +61,7 @@ afk.use(async (ctx, next) => {
                     if (afk) {
                         const date = new Date(afk.date)
                         const diff = convertMsToTime(new Date().getTime() - date.getTime())
-                        ctx.replyWithHTML(ctx.t("{{user}} is AFK since {{time}}\nReason: {{reason}}", { user: afk.username, time: diff, reason: afk.msg }))
+                        ctx.replyWithHTML(ctx.t("{{user}} is AFK since {{time}} {{reason}}", { user: afk.username, time: diff, reason: afk.msg }))
                     }
                 }
             }
