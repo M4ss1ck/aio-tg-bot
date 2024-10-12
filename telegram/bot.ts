@@ -19,6 +19,7 @@ import loggerMiddleware from './middleware/commandLogger'
 import ban from './commands/ban'
 import qr from './commands/qr'
 import i18n from './middleware/i18n'
+import afk from './commands/afk'
 import stickers from './commands/stickers'
 import gallery from './commands/gallery'
 import { getUsers } from './global/data'
@@ -39,6 +40,7 @@ bot
     .use(loggerMiddleware)
     .use(i18n)
     .use(admin)
+    .use(afk)
     .use(ban)
     .use(actions)
     .use(commands)

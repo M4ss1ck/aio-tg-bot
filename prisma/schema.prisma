@@ -69,3 +69,10 @@ model Photo {
   width   Int?
   height  Int?
 }
+
+model Afk {
+  id       String   @id // tg_id
+  username String?
+  date     DateTime
+  msg      String
+}

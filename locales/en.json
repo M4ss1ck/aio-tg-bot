@@ -79,5 +79,8 @@
   "es de un": "is",
   "Probar otra vez": "Try again",
   "fanático de este bot": "Big fan of this bot",
-  "This action is not available": "This action is not available"
+  "This action is not available": "This action is not available",
+  "You are now AFK with the reason: {{reason}}": "You are now AFK with the reason: {{reason}}",
+  "You are now AFK": "You are now AFK",
+  "{{user}} is no longer AFK after {{time}}": "{{user}} is no longer AFK after {{time}}"
 }
