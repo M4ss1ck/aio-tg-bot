@@ -6,7 +6,7 @@ import { convertMsToTime } from '../../utils/functions'
 const afk = new Composer<MyContext>()
 
 afk.command('afk', async (ctx) => {
-    const reason = ctx.message.text?.split(' ').slice(1).join(' ')
+    const msg = ctx.message.text?.split(' ').slice(1).join(' ')
     await prisma.afk.upsert({
         where: {
             id: ctx.from.id.toString()
@@ -14,17 +14,17 @@ afk.command('afk', async (ctx) => {
         create: {
             id: ctx.from.id.toString(),
             username: ctx.from.username,
-            msg: reason ?? ctx.t('No reason provided'),
+            msg: msg ?? ctx.t('No reason provided'),
             date: new Date()
         },
         update: {
             username: ctx.from.username,
-            msg: reason ?? ctx.t('No reason provided'),
+            msg: msg ?? ctx.t('No reason provided'),
             date: new Date()
         }
     })
-    const text = reason ? ctx.t("You are now AFK with the reason: {{reason}}", { reason }) : ctx.t("You are now AFK")
-    return ctx.reply(text)
+    const text = msg ? ctx.t('You AFK {{reason}}', { reason: msg }) : ctx.t("You are now AFK")
+    return ctx.replyWithHTML(text)
 })
 
 afk.use(async (ctx, next) => {

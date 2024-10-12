@@ -80,7 +80,7 @@
   "Probar otra vez": "Probar otra vez",
   "fanático de este bot": "fanático de este bot",
   "This action is not available": "Esta acción no está disponible",
-  "You are now AFK with the reason: {{reason}}": "A partir de ahora no estás disponible: {{reason}}",
+  "You AFK {{reason}}": "A partir de ahora no estás disponible: {{reason}}",
   "You are now AFK": "Ahora no estás disponible",
   "{{user}} is no longer AFK after {{time}}": "{{user}} no está disponible desde hace {{time}}"
 }
