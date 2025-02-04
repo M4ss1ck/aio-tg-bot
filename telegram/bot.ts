@@ -22,6 +22,7 @@ import i18n from './middleware/i18n'
 import afk from './commands/afk'
 import stickers from './commands/stickers'
 import gallery from './commands/gallery'
+import ai from './commands/ai'
 import { getUsers } from './global/data'
 import type { MyContext } from './interfaces'
 
@@ -52,6 +53,7 @@ bot
     .use(replacer)
     .use(polls)
     .use(qr)
+    .use(ai)
     .use(stickers)
     .use(filtros)
 

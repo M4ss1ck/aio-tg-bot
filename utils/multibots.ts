@@ -21,6 +21,7 @@ import qr from '../telegram/commands/qr'
 import i18n from '../telegram/middleware/i18n'
 import stickers from '../telegram/commands/stickers'
 import gallery from "../telegram/commands/gallery";
+import ai from "../telegram/commands/ai";
 import type { MyContext } from '../telegram/interfaces'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN!;
@@ -62,6 +63,7 @@ export const createBot = async (token: string) => {
             .use(replacer)
             .use(polls)
             .use(qr)
+            .use(ai)
             .use(stickers)
             .use(filtros)
 
