@@ -36,15 +36,21 @@ ai.command(["ai", "ia"], async (ctx) => {
             );
 
             const aiResponse = res.data.choices[0].message.content;
-            await ctx.reply(aiResponse);
+            await ctx.reply(aiResponse, {
+                reply_to_message_id: ctx.message.message_id,
+            });
 
         } catch (error) {
             console.error("Error calling OpenRouter API:", error);
             const msg = typeof error === 'object' && error && 'description' in error ? error.description as string : "Sorry, there was an error processing your request."
-            await ctx.reply(msg);
+            await ctx.reply(msg, {
+                reply_to_message_id: ctx.message.message_id,
+            });
         }
     } else {
-        await ctx.reply("You need to write more than that");
+        await ctx.reply("You need to write more than that", {
+            reply_to_message_id: ctx.message.message_id,
+        });
     }
 });
 
