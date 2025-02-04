@@ -9,16 +9,21 @@ ai.command(["ai", "ia"], async (ctx) => {
         await ctx.reply("API key not set. Please contact the bot owner.");
         return;
     }
+
+    // const model = "deepseek/deepseek-r1:free";
+    const model = "deepseek/deepseek-r1-distill-llama-70b:free";
+
     const search = ctx.message.text.replace(/^\/(ai|ia)((@\w+)?\s+)?/i, "");
+    const sanitizedInput = encodeURIComponent(search);
     if (search.length > 2) {
         try {
             const res = await axios.post("https://openrouter.ai/api/v1/chat/completions",
                 {
-                    model: "deepseek/deepseek-r1:free",
+                    model,
                     messages: [
                         {
                             role: "user",
-                            content: search
+                            content: sanitizedInput
                         }
                     ]
                 },
