@@ -7,15 +7,29 @@ export async function POST(
 ) {
     const token = params.token // 'a', 'b', or 'c'
     try {
+        const botCreationTimeout = setTimeout(() => {
+            throw new Error('Bot creation timed out');
+        }, 10000);
         const bot = await createBot(token as string)
-        if (bot) {
-            const body = await request.json()
-            await bot.handleUpdate(body).catch(e => logger.error(e))
-            return Response.json({ message: 'All fine' }, { status: 200 })
-        } else {
-            return Response.json({ message: 'Error' }, { status: 200 })
-        }
-    } catch (error) {
 
+        if (!bot) {
+            clearTimeout(botCreationTimeout)
+            return Response.json({}, { status: 204 });
+        }
+
+        const updateTimeout = setTimeout(() => {
+            throw new Error('Bot update timed out');
+        }, 15000);
+
+        const body = await request.json()
+        await bot.handleUpdate(body)
+        clearTimeout(updateTimeout)
+    } catch (error) {
+        logger.error('Error handling bot:', error);
+        if (error instanceof Error && error.stack) {
+            logger.debug(error.stack);
+        }
     }
+
+    return Response.json({}, { status: 204 });
 }
