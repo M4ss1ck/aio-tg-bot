@@ -5,7 +5,7 @@ export async function POST(
     request: Request,
     { params }: { params: { token: string } }
 ) {
-    const token = params.token // 'a', 'b', or 'c'
+    const token = params.token;
     try {
         const botCreationTimeout = setTimeout(() => {
             throw new Error('Bot creation timed out');
@@ -14,7 +14,7 @@ export async function POST(
 
         if (!bot) {
             clearTimeout(botCreationTimeout)
-            return Response.json({}, { status: 204 });
+            return Response.json({}, { status: 200 });
         }
 
         const updateTimeout = setTimeout(() => {
@@ -31,5 +31,5 @@ export async function POST(
         }
     }
 
-    return Response.json({}, { status: 204 });
+    return Response.json({}, { status: 200 });
 }

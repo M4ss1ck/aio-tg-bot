@@ -4,7 +4,7 @@ import { logger } from "../../../utils/logger"
 export async function POST(request: Request) {
     // Early validation
     if (!request.body) {
-        return Response.json({}, { status: 204 }); // No content
+        return Response.json({}, { status: 200 });
     }
 
     try {
@@ -25,5 +25,5 @@ export async function POST(request: Request) {
     }
 
     // Minimal response - server response is not important
-    return Response.json({}, { status: 204 });
+    return Response.json({}, { status: 200 });
 }
