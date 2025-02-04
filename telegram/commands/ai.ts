@@ -2,6 +2,7 @@ import { Composer } from "telegraf";
 import axios from "axios";
 
 import MarkdownParser from "../../utils/markdownParser";
+import { logger } from "../../utils/logger";
 
 const ai = new Composer();
 const apiKey = process.env.OPENROUTER_API_KEY;
@@ -38,6 +39,9 @@ ai.command(["ai", "ia"], async (ctx) => {
             );
 
             const aiResponse = res.data.choices[0].message.content;
+            logger.info(`AI response: ${aiResponse}`);
+            if (!aiResponse) throw new Error("No response from AI (Timeout?)");
+
             const parsedResponse = MarkdownParser.toPlainText(aiResponse);
 
             // handle long responses
