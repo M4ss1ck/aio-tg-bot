@@ -28,7 +28,8 @@ const domain = process.env.NEXT_PUBLIC_DOMAIN!;
 
 export const setWH = async (token: string) => {
     try {
-        const url = `https://api.telegram.org/bot${token}/setWebhook?url=https://${domain}/api/token/${token}`
+        const parsedDomain = domain.replace(/^http(s)?:\/\//, "");
+        const url = `https://api.telegram.org/bot${token}/setWebhook?url=https://${parsedDomain}/api/token/${token}`
         logger.info('WH url: ', url)
         const webhook = await axios(url);
         logger.success(webhook.data);
@@ -67,16 +68,16 @@ export const createBot = async (token: string) => {
             .use(stickers)
             .use(filtros)
 
-        bot.launch({
-            webhook: {
-                domain: process.env.NEXT_PUBLIC_DOMAIN!,
-                hookPath: `/api/token/${token}`
-            },
-            dropPendingUpdates: true
-        }).catch(e => {
-            logger.error('Bot stopped working')
-            logger.error(e)
-        })
+        // bot.launch({
+        //     webhook: {
+        //         domain: process.env.NEXT_PUBLIC_DOMAIN!,
+        //         hookPath: `/api/token/${token}`
+        //     },
+        //     dropPendingUpdates: true
+        // }).catch(e => {
+        //     logger.error('Bot stopped working')
+        //     logger.error(e)
+        // })
 
         bot.catch(e => {
             logger.error('Bot general error!')

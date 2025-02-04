@@ -57,17 +57,17 @@ bot
     .use(stickers)
     .use(filtros)
 
-bot.launch({
-    webhook: {
-        domain: domain,
-        hookPath: '/api/bot'
-    },
-    dropPendingUpdates: true
-}).catch(e => {
-    logger.error('Bot stopped working')
-    logger.error(e)
-})
-logger.info('Bot started!')
+// bot.launch({
+//     webhook: {
+//         domain: domain,
+//         hookPath: '/api/bot'
+//     },
+//     dropPendingUpdates: true
+// }).catch(e => {
+//     logger.error('Bot stopped working')
+//     logger.error(e)
+// })
+// logger.info('Bot started!')
 
 bot.catch(e => {
     logger.error('Bot general error!')
