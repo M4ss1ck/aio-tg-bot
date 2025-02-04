@@ -9,7 +9,7 @@ const setWH = async () => {
   const cleanDomain = domain.replace(/^http(s)?:\/\//, "");
   try {
     const webhook = await axios.get(
-      `https://api.telegram.org/bot${token}/setWebhook?url=https://${cleanDomain}/api/bot`
+      `https://api.telegram.org/bot${token}/setWebhook?url=https://${cleanDomain}/api/bot&drop_pending_updates=True`
     );
     console.log(webhook.data);
   } catch (error) {

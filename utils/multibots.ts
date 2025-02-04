@@ -29,7 +29,7 @@ const domain = process.env.NEXT_PUBLIC_DOMAIN!;
 export const setWH = async (token: string) => {
     try {
         const parsedDomain = domain.replace(/^http(s)?:\/\//, "");
-        const url = `https://api.telegram.org/bot${token}/setWebhook?url=https://${parsedDomain}/api/token/${token}`
+        const url = `https://api.telegram.org/bot${token}/setWebhook?url=https://${parsedDomain}/api/token/${token}&drop_pending_updates=True`
         logger.info('WH url: ', url)
         const webhook = await axios(url);
         logger.success(webhook.data);
