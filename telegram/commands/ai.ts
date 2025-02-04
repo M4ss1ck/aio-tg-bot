@@ -1,6 +1,8 @@
 import { Composer } from "telegraf";
 import axios from "axios";
 
+import MarkdownParser from "../../utils/markdownParser";
+
 const ai = new Composer();
 const apiKey = process.env.OPENROUTER_API_KEY;
 
@@ -36,10 +38,24 @@ ai.command(["ai", "ia"], async (ctx) => {
             );
 
             const aiResponse = res.data.choices[0].message.content;
-            await ctx.reply(aiResponse, {
-                reply_to_message_id: ctx.message.message_id,
-            });
+            const parsedResponse = MarkdownParser.toPlainText(aiResponse);
 
+            // handle long responses
+            if (parsedResponse.length > 4096) {
+                const chunks = Math.ceil(parsedResponse.length / 4096)
+                for (let i = 0; i < chunks; i++) {
+                    const index = 4096 * i
+                    await ctx.reply(parsedResponse.substring(index, index + 4096), {
+                        reply_to_message_id: ctx.message.message_id,
+                        disable_web_page_preview: true,
+                    })
+                }
+            } else {
+                await ctx.reply(parsedResponse, {
+                    reply_to_message_id: ctx.message.message_id,
+                    disable_web_page_preview: true,
+                });
+            }
         } catch (error) {
             console.error("Error calling OpenRouter API:", error);
             const msg = typeof error === 'object' && error && 'description' in error ? error.description as string : "Sorry, there was an error processing your request."
