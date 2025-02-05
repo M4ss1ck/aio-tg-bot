@@ -31,7 +31,8 @@ class MarkdownParser {
         text = text.replace(this.patterns.strikethrough, '$1');
 
         // Clean up whitespace
-        text = text.replace(/\s+/g, ' ').trim();
+        // text = text.replace(/\s+/g, ' ').trim();
+        text = text.trim();
 
         return text;
     }
