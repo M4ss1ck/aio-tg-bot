@@ -8,4 +8,5 @@ export interface MyContext extends Context {
     session: SessionData
     i18next: i18n
     t: TFunction
+    model?: string
 }
