@@ -12,7 +12,8 @@ class MarkdownParser {
     };
 
     static toPlainText(markdown: string): string {
-        let text = markdown.replace(/\r\n|\n/g, ' ');
+        let text = markdown;
+        // let text = markdown.replace(/\r\n|\n/g, ' ');
 
         // Handle headers and lists
         text = text.replace(this.patterns.headers, '$2');
