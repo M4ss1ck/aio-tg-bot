@@ -10,6 +10,7 @@ export const getUsers = async () => {
       nick: true,
       fecha: true,
       lang: true,
+      model: true,
     },
   })
   const userObject: Record<string, User> = users.reduce(
@@ -50,6 +51,7 @@ export const saveResultsInDB = async (results: any, query: string) => {
       create: {
         query,
         response: parsedResults,
+        date: new Date(),
       },
       update: {
         response: parsedResults,
