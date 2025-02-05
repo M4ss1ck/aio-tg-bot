@@ -25,3 +25,18 @@ export const botList = [
     'longPollRobot',
     'mention-bot',
 ]
+
+export const aiModels = [
+    {
+        model: "deepseek/deepseek-r1-distill-llama-70b:free",
+        name: "deepseek-r1-distill-llama-70b"
+    },
+    {
+        model: "deepseek/deepseek-r1:free",
+        name: "deepseek-r1"
+    },
+    {
+        model: "google/gemini-2.0-flash-thinking-exp:free",
+        name: "gemini-2.0-flash-thinking"
+    }
+]

@@ -25,6 +25,7 @@ model User {
   rango  String?
   lang   String   @default("es")
   photos Photo[]
+  model  String?
 }
 
 model Filter {

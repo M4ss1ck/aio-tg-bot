@@ -1,12 +1,51 @@
-import { Composer } from "telegraf";
+import { Composer, Markup } from "telegraf";
 import axios from "axios";
 
 import MarkdownParser from "../../utils/markdownParser";
 import { logger } from "../../utils/logger";
 import type { MyContext } from "../interfaces";
+import { updateUser } from "../global/data";
+import { aiModels } from "../../config/constants";
 
 const ai = new Composer<MyContext>();
 const apiKey = process.env.OPENROUTER_API_KEY;
+
+
+ai.use(async (ctx, next) => {
+    try {
+        if (
+            ctx.from?.id
+        ) {
+            const userObjFromGlobal = global.USUARIOS[ctx.from.id.toString()]
+            const userModel = userObjFromGlobal?.model ?? aiModels[0].model
+            ctx.model = userModel
+        }
+    } catch (error) {
+        logger.info('Error in AI middleware')
+        logger.error(error)
+    }
+    return next()
+})
+
+ai.command("ai_model", async (ctx) => {
+    const text = `Select your AI model:\n${aiModels.map(model => `- ${model.name} (${model.model})`).join('\n')}`
+    await ctx.reply(text,
+        Markup.inlineKeyboard(
+            aiModels.map((model, index) => Markup.button.callback(model.name, `set_model_${index}`))
+        )
+    )
+})
+
+ai.action(/set_model_(\d+)/i, async ctx => {
+    if ('data' in ctx.callbackQuery && ctx.from?.id) {
+        const [, indexString] = ctx.callbackQuery.data.match(/set_model_(\d+)/i) || [null, '1']
+        const index = parseInt(indexString ?? '1')
+        const model = aiModels[index].model
+        await updateUser({ ...global.USUARIOS[ctx.from.id.toString()], model })
+        await ctx.reply(`Your AI model has been set to ${model}`)
+    }
+})
+
 
 ai.command(["ai", "ia"], async (ctx) => {
     if (!apiKey) {
@@ -14,8 +53,8 @@ ai.command(["ai", "ia"], async (ctx) => {
         return;
     }
 
-    // const model = "deepseek/deepseek-r1:free";
-    const model = "deepseek/deepseek-r1-distill-llama-70b:free";
+    const model = ctx.model ?? "deepseek/deepseek-r1-distill-llama-70b:free";
+    logger.info(`AI model: ${model}`)
 
     const search = ctx.message.text.replace(/^\/(ai|ia)((@\w+)?\s+)?/i, "");
     const sanitizedInput = encodeURIComponent(search);
