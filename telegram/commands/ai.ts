@@ -38,6 +38,7 @@ ai.command("ai_model", async (ctx) => {
 
 ai.action(/set_model_(\d+)/i, async ctx => {
     if ('data' in ctx.callbackQuery && ctx.from?.id) {
+        await ctx.answerCbQuery().catch(e => logger.error(e))
         const [, indexString] = ctx.callbackQuery.data.match(/set_model_(\d+)/i) || [null, '1']
         const index = parseInt(indexString ?? '1')
         const model = aiModels[index].model
