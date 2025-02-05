@@ -57,7 +57,16 @@ ai.command(["ai", "ia"], async (ctx) => {
     const model = ctx.model ?? "deepseek/deepseek-r1-distill-llama-70b:free";
     logger.info(`AI model: ${model}`)
 
-    const search = ctx.message.text.replace(/^\/(ai|ia)((@\w+)?\s+)?/i, "");
+    let search = ctx.message.text.replace(/^\/(ai|ia)((@\w+)?\s+)?/i, "");
+    // append replied-to message content
+    if (ctx.message.reply_to_message) {
+        if ('text' in ctx.message.reply_to_message) {
+            search += "\n" + ctx.message.reply_to_message.text;
+        }
+        else if ('caption' in ctx.message.reply_to_message) {
+            search += "\n" + ctx.message.reply_to_message.caption;
+        }
+    }
     const sanitizedInput = encodeURIComponent(search);
     if (search.length > 2) {
         try {
