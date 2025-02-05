@@ -38,5 +38,13 @@ export const aiModels = [
     {
         model: "google/gemini-2.0-flash-thinking-exp:free",
         name: "gemini-2.0-flash-thinking"
+    },
+    {
+        model: "google/gemini-2.0-pro-exp-02-05:free",
+        name: "gemini-2.0-pro-exp-02-05"
+    },
+    {
+        model: "qwen/qwen2.5-vl-72b-instruct:free",
+        name: "qwen2.5-vl-72b-instruct"
     }
 ]
