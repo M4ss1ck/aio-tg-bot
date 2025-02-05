@@ -8,7 +8,7 @@ export interface User {
     nick: string
     fecha: Date
     lang: string
-    model?: string
+    model?: string | null
 }
 
 export { };
