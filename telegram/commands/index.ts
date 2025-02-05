@@ -81,6 +81,16 @@ commands.command('me', async (ctx) => {
   }
 })
 
+commands.command('local_info', async (ctx) => {
+  const localData = global.USUARIOS[ctx.from.id.toString()]
+  const text = `<b>${ctx.t('Información del usuario en BD')}:</b>\n\n${JSON.stringify(localData, null, 2)}`
+
+  ctx.replyWithHTML(text, {
+    reply_to_message_id: ctx.message.message_id,
+  })
+
+})
+
 commands.command('info', async (ctx) => {
   if (ctx.message.reply_to_message) {
     const msgInfo = JSON.stringify(ctx.message.reply_to_message, null, 2)
