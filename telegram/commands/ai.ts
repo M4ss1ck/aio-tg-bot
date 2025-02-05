@@ -31,7 +31,7 @@ ai.command("ai_model", async (ctx) => {
     const text = `Select your AI model:\n${aiModels.map(model => `- ${model.name} (${model.model})`).join('\n')}`
     await ctx.reply(text,
         Markup.inlineKeyboard(
-            aiModels.map((model, index) => Markup.button.callback(model.name, `set_model_${index}`))
+            aiModels.map((model, index) => [Markup.button.callback(model.name, `set_model_${index}`)])
         )
     )
 })
