@@ -83,5 +83,8 @@
   "You AFK {{reason}}": "A partir de ahora no estás disponible: {{reason}}",
   "You are now AFK": "Ahora no estás disponible",
   "{{user}} is no longer AFK after {{time}}": "{{user}} volvió después de {{time}}",
-  "{{user}} is AFK since {{time}} {{reason}}": "{{user}} no está disponible desde {{time}}\nRazón: {{reason}}"
+  "{{user}} is AFK since {{time}} {{reason}}": "{{user}} no está disponible desde {{time}}\nRazón: {{reason}}",
+  "You need to write more than that": "Debes escribir más",
+  "Sorry, there was an error processing your request.": "Lo siento, hubo un error procesando tu petición.",
+  "API key not set. Please contact the bot owner": "API key no establecida. Por favor, contacta al dueño del bot (que te va a ignorar)"
 }

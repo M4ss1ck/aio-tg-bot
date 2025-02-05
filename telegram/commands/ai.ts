@@ -3,13 +3,14 @@ import axios from "axios";
 
 import MarkdownParser from "../../utils/markdownParser";
 import { logger } from "../../utils/logger";
+import type { MyContext } from "../interfaces";
 
-const ai = new Composer();
+const ai = new Composer<MyContext>();
 const apiKey = process.env.OPENROUTER_API_KEY;
 
 ai.command(["ai", "ia"], async (ctx) => {
     if (!apiKey) {
-        await ctx.reply("API key not set. Please contact the bot owner.");
+        await ctx.reply(ctx.t("API key not set. Please contact the bot owner") as string);
         return;
     }
 
@@ -62,13 +63,14 @@ ai.command(["ai", "ia"], async (ctx) => {
             }
         } catch (error) {
             console.error("Error calling OpenRouter API:", error);
-            const msg = typeof error === 'object' && error && 'description' in error ? error.description as string : "Sorry, there was an error processing your request."
+            const msg = typeof error === 'object' && error && 'description' in error ? error.description as string : ctx.t("Sorry, there was an error processing your request.")
             await ctx.reply(msg, {
                 reply_to_message_id: ctx.message.message_id,
             });
         }
     } else {
-        await ctx.reply("You need to write more than that", {
+        const msg = ctx.t("You need to write more than that")
+        await ctx.reply(msg, {
             reply_to_message_id: ctx.message.message_id,
         });
     }

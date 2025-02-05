@@ -83,5 +83,8 @@
   "You AFK {{reason}}": "You are now AFK with the reason: {{reason}}",
   "You are now AFK": "You are now AFK",
   "{{user}} is no longer AFK after {{time}}": "{{user}} is no longer AFK after {{time}}",
-  "{{user}} is AFK since {{time}} {{reason}}": "{{user}} has been AFK for {{time}}\nReason: {{reason}}"
+  "{{user}} is AFK since {{time}} {{reason}}": "{{user}} has been AFK for {{time}}\nReason: {{reason}}",
+  "You need to write more than that": "You need to write more than that",
+  "Sorry, there was an error processing your request.": "Sorry, there was an error processing your request.",
+  "API key not set. Please contact the bot owner": "API key not set. Please contact the bot owner"
 }
