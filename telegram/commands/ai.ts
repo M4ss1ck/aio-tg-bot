@@ -54,10 +54,11 @@ ai.command(["ai", "ia"], async (ctx) => {
         return;
     }
 
-    const model = ctx.model ?? "deepseek/deepseek-r1-distill-llama-70b:free";
-    logger.info(`AI model: ${model}`)
+    let model = ctx.model ?? aiModels[0].model;
 
     let search = ctx.message.text.replace(/^\/(ai|ia)((@\w+)?\s+)?/i, "");
+    let includeImage = ctx.message.reply_to_message && 'photo' in ctx.message.reply_to_message;
+
     // append replied-to message content
     if (ctx.message.reply_to_message) {
         if ('text' in ctx.message.reply_to_message) {
@@ -68,15 +69,46 @@ ai.command(["ai", "ia"], async (ctx) => {
         }
     }
     const sanitizedInput = encodeURIComponent(search);
-    if (search.length > 2) {
+    if (sanitizedInput.length > 2) {
         try {
+            let content: any = sanitizedInput;
+            // handle images
+            if (includeImage && ctx.message.reply_to_message && 'photo' in ctx.message.reply_to_message) {
+                const photo = ctx.message.reply_to_message.photo.pop()
+                if (photo) {
+                    const link = await ctx.telegram.getFileLink(photo.file_id)
+                    if (link.href) {
+                        // check if model supports images
+                        const modelObj = aiModels.find(ai => ai.model === model)
+                        if (!modelObj || !modelObj.image) {
+                            model = aiModels.find(ai => ai.image)?.model ?? aiModels[0].model
+                        }
+
+                        // refactor content
+                        content = [
+                            {
+                                type: "text",
+                                text: sanitizedInput
+                            },
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: link.href,
+                                }
+                            }
+                        ]
+                    }
+                }
+
+            }
+
             const res = await axios.post("https://openrouter.ai/api/v1/chat/completions",
                 {
                     model,
                     messages: [
                         {
                             role: "user",
-                            content: sanitizedInput
+                            content,
                         }
                     ]
                 },
