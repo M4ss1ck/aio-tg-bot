@@ -28,28 +28,23 @@ export const botList = [
 
 export const aiModels = [
     {
-        model: "deepseek/deepseek-r1-distill-llama-70b:free",
-        name: "DeepSeek: R1 Distill Llama 70B",
+        model: "deepseek/deepseek-r1-0528-qwen3-8b:free",
+        name: "DeepSeek: Deepseek R1 0528 Qwen3 8B",
         image: false
     },
     {
-        model: "deepseek/deepseek-r1:free",
-        name: "DeepSeek: R1",
+        model: "deepseek/deepseek-r1-0528:free",
+        name: "DeepSeek: R1 0528",
         image: false
     },
     {
-        model: "google/gemini-2.0-flash-thinking-exp:free",
-        name: "Gemini 2.0 Flash Thinking Experimental 01-21",
+        model: "google/gemma-3n-e4b-it:free",
+        name: "Google: Gemma 3n 4B",
         image: true
     },
     {
-        model: "google/gemini-2.0-pro-exp-02-05:free",
-        name: "Gemini Pro 2.0 Experimental",
+        model: "qwen/qwen3-30b-a3b:free",
+        name: "Qwen: Qwen3 30B A3B",
         image: true
     },
-    {
-        model: "qwen/qwen2.5-vl-72b-instruct:free",
-        name: "Qwen2.5 VL 72B Instruct",
-        image: true
-    }
 ]
