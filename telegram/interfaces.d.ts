@@ -9,4 +9,5 @@ export interface MyContext extends Context {
     i18next: i18n
     t: TFunction
     model?: string
+    isPremium?: boolean
 }
