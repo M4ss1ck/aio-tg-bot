@@ -1,4 +1,6 @@
-import { Telegraf, session } from "telegraf";
+import { Bot, session } from "grammy";
+import { hydrate } from "@grammyjs/hydrate";
+import { parseMode } from "@grammyjs/parse-mode";
 import axios from "axios";
 import { logger } from "./logger";
 import { prisma } from "../db/prisma";
@@ -22,7 +24,7 @@ import i18n from '../telegram/middleware/i18n'
 import stickers from '../telegram/commands/stickers'
 import gallery from "../telegram/commands/gallery";
 import ai from "../telegram/commands/ai";
-import type { MyContext } from '../telegram/interfaces'
+import type { MyContext, SessionData } from '../telegram/types'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN!;
 
@@ -45,13 +47,24 @@ export const createBot = async (token: string) => {
     logger.info('calling createBot')
     try {
         logger.info('starting new bot')
-        const bot = new Telegraf<MyContext>(token)
+        const bot = new Bot<MyContext>(token)
+        
+        // Apply grammY plugins
+        bot.use(hydrate())
+        bot.api.config.use(parseMode('HTML'))
+        
+        // Session middleware
+        bot.use(session({
+            initial: (): SessionData => ({ lang: 'en' }),
+            getSessionKey: (ctx) => ctx.from?.id?.toString()
+        }))
+        
+        // Apply all middleware and commands
         bot
-            .use(session())
+            .use(i18n)
             .use(start)
             .use(createUser)
             .use(loggerMiddleware)
-            .use(i18n)
             .use(admin)
             .use(ban)
             .use(actions)
@@ -68,20 +81,9 @@ export const createBot = async (token: string) => {
             .use(stickers)
             .use(filtros)
 
-        // bot.launch({
-        //     webhook: {
-        //         domain: process.env.NEXT_PUBLIC_DOMAIN!,
-        //         hookPath: `/api/token/${token}`
-        //     },
-        //     dropPendingUpdates: true
-        // }).catch(e => {
-        //     logger.error('Bot stopped working')
-        //     logger.error(e)
-        // })
-
-        bot.catch(e => {
+        bot.catch((err) => {
             logger.error('Bot general error!')
-            logger.error(e)
+            logger.error(err)
         })
 
         localDB.set('currentToken', token)

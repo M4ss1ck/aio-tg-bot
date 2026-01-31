@@ -1,27 +1,27 @@
-import { Composer, Markup } from "telegraf";
-import { signatureFunc } from "../../utils/functions";
-import { prisma } from "../../db/prisma";
-import { localDB } from "../../db/local";
-import { logger } from "../../utils/logger";
-import { domain } from "../../config/constants";
-import type { MyContext } from '../interfaces'
+import { Composer, InlineKeyboard } from 'grammy'
+import { logger } from '../../utils/logger'
+import { domain } from '../../config/constants'
+import type { MyContext } from '../types'
 
 const start = new Composer<MyContext>()
 
-start.start(async ctx => {
-    if (ctx.chat.type === 'private') {
+start.command('start', async (ctx) => {
+    if (ctx.chat?.type === 'private') {
         const url = `https://${domain}/`
-        await ctx.replyWithHTML(
+        const keyboard = new InlineKeyboard()
+            .webApp('WebApp', url)
+        await ctx.reply(
             ctx.t('<b>Hola, {{name}}!</b>\nEnvía <code>/ayuda</code> para ver algunas opciones', {
-                name: ctx.message.from.first_name,
-            }),
-            Markup.inlineKeyboard([
-                Markup.button.webApp('WebApp', url)
-            ])).catch((e) => logger.error(e))
+                name: ctx.message?.from?.first_name ?? 'Usuario',
+            }) as string,
+            { reply_markup: keyboard }
+        ).catch((e) => logger.error(e))
     } else {
-        await ctx.replyWithHTML(ctx.t('<b>Hola, {{name}}!</b>\nEnvía <code>/ayuda</code> para ver algunas opciones', {
-            name: ctx.message.from.first_name,
-        })).catch((e) => logger.error(e))
+        await ctx.reply(
+            ctx.t('<b>Hola, {{name}}!</b>\nEnvía <code>/ayuda</code> para ver algunas opciones', {
+                name: ctx.message?.from?.first_name ?? 'Usuario',
+            }) as string
+        ).catch((e) => logger.error(e))
     }
 })
 

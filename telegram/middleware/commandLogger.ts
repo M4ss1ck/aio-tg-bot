@@ -1,18 +1,18 @@
-import { Composer } from 'telegraf'
-import { callbackQuery, message } from "telegraf/filters"
+import { Composer } from 'grammy'
+import type { MyContext } from '../types'
 
-const logger = new Composer()
+const logger = new Composer<MyContext>()
 
 logger.use(async (ctx, next) => {
     try {
-        let messageText = `[${ctx.from?.id.toString() ?? 'n/a'}] `
-        if (ctx.has(message('text')) && ctx.message.text.startsWith('/')) {
+        let messageText = `[${ctx.from?.id?.toString() ?? 'n/a'}] `
+        if (ctx.message?.text?.startsWith('/')) {
             messageText += `[command] ${ctx.message.text}`
             console.log(messageText)
-        } else if (ctx.has(callbackQuery('data'))) {
+        } else if (ctx.callbackQuery && 'data' in ctx.callbackQuery) {
             messageText += `[action] ${ctx.callbackQuery.data}`
             console.log(messageText)
-        } else if ('inlineQuery' in ctx && ctx.inlineQuery?.query) {
+        } else if (ctx.inlineQuery?.query) {
             messageText += `[inline] ${ctx.inlineQuery.query}`
             console.log(messageText)
         }
