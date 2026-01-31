@@ -2,6 +2,7 @@ import { Bot, session } from 'grammy'
 import { hydrate } from '@grammyjs/hydrate'
 import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
 import { autoRetry } from '@grammyjs/auto-retry'
+import { Agent } from 'https'
 import start from './middleware/start'
 import clone from './middleware/clone'
 import { localDB } from '../db/local'
@@ -33,9 +34,15 @@ import { getRedisStorage } from './session/redis'
 // set global state
 global.USUARIOS = await getUsers()
 
+// Force IPv4 to avoid IPv6 connection issues
+const ipv4Agent = new Agent({ family: 4 })
+
 export const bot = new Bot<MyContext>(token, {
   client: {
     timeoutSeconds: 30,
+    baseFetchConfig: {
+      agent: ipv4Agent,
+    },
   }
 })
 
