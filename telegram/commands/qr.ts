@@ -47,9 +47,9 @@ qr.command('qr', async (ctx) => {
     }
     else {
         try {
-            const qrText = ctx.message?.reply_to_message && 
-            'text' in ctx.message.reply_to_message &&
-            ctx.message.reply_to_message.text
+            const qrText = ctx.message?.reply_to_message
+                && 'text' in ctx.message.reply_to_message
+                && ctx.message.reply_to_message.text
                 ? ctx.message.reply_to_message.text
                 : ctx.message?.text?.replace(/^\/qr((@\w+)?\s+)?/g, '') ?? ''
             const img = await generateQR(qrText)
@@ -58,7 +58,7 @@ qr.command('qr', async (ctx) => {
                 const matches = img.match(regex)
                 if (matches) {
                     const data = matches[2]
-                    ctx.replyWithPhoto(new InputFile(Buffer.from(data, 'base64')))
+                    ctx.replyWithPhoto(new InputFile(new Uint8Array(Buffer.from(data, 'base64'))))
                 }
             }
             else {

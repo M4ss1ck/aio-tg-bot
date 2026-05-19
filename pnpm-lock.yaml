@@ -23,14 +23,11 @@ importers:
       '@grammyjs/parse-mode':
         specifier: ^1.9.0
         version: 1.11.1(grammy@1.39.3)
-      '@grammyjs/runner':
-        specifier: ^2.0.3
-        version: 2.0.3(grammy@1.39.3)
       '@grammyjs/storage-redis':
         specifier: ^2.4.0
         version: 2.5.1
       '@prisma/adapter-pg':
-        specifier: ^7.0.0
+        specifier: ^7.3.0
         version: 7.3.0
       '@prisma/client':
         specifier: ^7.0.0
@@ -392,12 +389,6 @@ packages:
     engines: {node: '>=14.13.1'}
     peerDependencies:
       grammy: ^1.20.1
-
-  '@grammyjs/runner@2.0.3':
-    resolution: {integrity: sha512-nckmTs1dPWfVQteK9cxqxzE+0m1VRvluLWB8UgFzsjg62w3qthPJt0TYtJBEdG7OedvfQq4vnFAyE6iaMkR42A==}
-    engines: {node: '>=12.20.0 || >=14.13.1'}
-    peerDependencies:
-      grammy: ^1.13.1
 
   '@grammyjs/storage-redis@2.5.1':
     resolution: {integrity: sha512-Rz7bnrtDz8NOjgSRR4n/rBciHKSvmkrgIUc+8Yb96tSsecBlA91MGOmcgmQXKxb7gTmwliF37VgmMT85bsCZtA==}
@@ -3558,11 +3549,6 @@ snapshots:
 
   '@grammyjs/parse-mode@1.11.1(grammy@1.39.3)':
     dependencies:
-      grammy: 1.39.3
-
-  '@grammyjs/runner@2.0.3(grammy@1.39.3)':
-    dependencies:
-      abort-controller: 3.0.0
       grammy: 1.39.3
 
   '@grammyjs/storage-redis@2.5.1': {}

@@ -2,63 +2,45 @@
 
 > "One bot to rule them all"
 
-This is what you get when you combine [Bot Manager](https://github.com/M4ss1ck/bot-manager) with [MassickBot v2](https://github.com/M4ss1ck/tg-telegraf-bot)
+This is what you get when you combine [Bot Manager](https://github.com/M4ss1ck/bot-manager) with [MassickBot v2](https://github.com/M4ss1ck/tg-telegraf-bot).
 
 Full-featured constantly-evolving Telegram bot with WebApp support and a `/clone` command to allow users to have their own copy.
 
 ## Stack
 
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [grammY](https://grammy.dev/) - Modern Telegram Bot framework
-- [Prisma](https://www.prisma.io/)
-- [Redis](https://redis.io/) - Session storage (optional)
+- [Next.js](https://nextjs.org/) – WebApp + production webhook server (`/api/bot`).
+- [Tailwind CSS](https://tailwindcss.com/) – WebApp styling.
+- [grammY](https://grammy.dev/) – Telegram Bot framework (plugins: `hydrate`, `parse-mode`, `auto-retry`, `storage-redis`).
+- [Prisma](https://www.prisma.io/) v7 with the PostgreSQL driver adapter (no Rust engine).
+- [Redis](https://redis.io/) – session storage (optional; falls back to in-memory).
 
-## Features
+## How it runs
 
-- TypeScript with ESM modules.
-- Next.js (and all it brings) for the WebApp.
-- Tailwind CSS for styling.
-- grammY with plugins (hydrate, parse-mode, runner).
-- Polling mode for development, webhooks for production.
-- Redis session storage with in-memory fallback.
-- Prisma ORM with PostgreSQL database.
-- i18next for internationalization (en/es).
+| Mode | How | When |
+| --- | --- | --- |
+| Polling | `pnpm dev` → `telegram/runner/polling.ts` (uses `bot.start()`) | Local dev, no public URL needed |
+| Webhook | Next.js POST at `/api/bot` via grammY's `webhookCallback` | Production + `pnpm dev:next` |
+
+Cloned bots run only in webhook mode at `/api/token/[token]`.
 
 ## Development
 
 ### Environment Variables
 
-Create a `.env` file with the following variables:
+Copy `.env.example` to `.env` and fill in the values you need.
 
-```env
-TOKEN=your_telegram_bot_token
-NEXT_PUBLIC_DOMAIN=your_webhook_domain
-ADMIN_ID=your_telegram_user_id
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-REDIS_URL=redis://localhost:6379  # Optional - falls back to in-memory
-VICTIM_ID=123456789               # Optional - for /tag command
-```
+Required: `TOKEN`, `DATABASE_URL`, `ADMIN_ID`, `NEXT_PUBLIC_DOMAIN`, `NEXT_PUBLIC_SITEKEY`.
+Optional: `REDIS_URL`, `OPENROUTER_API_KEY`, `CLOUDFLARE_*`, `TG_API`, `TGWD_SECRET`, `VICTIM_ID`.
 
-### Redis Setup (Optional)
+### Local services
 
-For persistent sessions across restarts, run Redis locally with Docker:
+Spin up Postgres + Redis with the dev profile:
 
 ```bash
-# Start Redis container
-docker run -d --name redis-bot -p 6379:6379 redis:alpine
-
-# Verify it's running
-docker ps
-
-# Stop when done
-docker stop redis-bot
-
-# Start again later
-docker start redis-bot
+docker compose --profile dev up -d
 ```
 
-If `REDIS_URL` is not set, the bot will use in-memory session storage (sessions are lost on restart).
+Without `REDIS_URL`, sessions fall back to in-memory and are lost on restart.
 
 ### Running the Bot
 
@@ -69,16 +51,30 @@ pnpm install
 # Generate Prisma client and push schema
 pnpm prisma
 
-# Development (polling mode - no webhook needed)
+# Polling mode (no webhook needed)
 pnpm dev
 
-# Development with Next.js (webhook mode)
+# Webhook mode via Next.js (sets webhook, then starts the dev server)
 pnpm dev:next
 ```
 
-### Webhook Setup
+### Webhook setup
 
-`webhook.js` can set the webhook for the bot. It's automatically run with `yarn dev:next`, or manually with:
+`scripts/set-webhook.ts` registers `NEXT_PUBLIC_DOMAIN/api/bot` with Telegram. `pnpm dev:next` runs it automatically; you can also call it directly:
+
+```bash
+pnpm set-webhook
+```
+
+### Docker deployment
+
+Production runs only the `app` service (webhook mode). Postgres + Redis are expected to be external (or use the `dev` profile locally).
+
+```bash
+docker compose up --build -d
+```
+
+After the container is up, set the webhook once from your local machine (with prod env loaded):
 
 ```bash
 pnpm set-webhook
