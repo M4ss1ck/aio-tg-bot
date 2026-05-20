@@ -1,33 +1,20 @@
 services:
-  # ---- Production: built by Coolify via `docker compose up` (no profile needed) ----
   app:
     build: .
     ports:
-      - '3000:3000'
-    env_file: .env
-    restart: unless-stopped
-
-  # ---- Local dev: `docker compose --profile dev up` ----
-  db:
-    image: postgres:16-alpine
-    profiles: ['dev']
-    ports:
-      - '5432:5432'
+      - '${APP_PORT:-3000}:3000'
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tgbot
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    profiles: ['dev']
-    ports:
-      - '6379:6379'
+    restart: unless-stopped
     volumes:
       - redis_data:/data
 
 volumes:
-  postgres_data:
   redis_data:
