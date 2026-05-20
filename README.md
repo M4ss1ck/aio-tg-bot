@@ -34,13 +34,29 @@ Optional: `REDIS_URL`, `OPENROUTER_API_KEY`, `CLOUDFLARE_*`, `TG_API`, `TGWD_SEC
 
 ### Local services
 
-Spin up Postgres + Redis with the dev profile:
+Spin up Postgres + Redis with the local Compose override:
 
 ```bash
-docker compose --profile dev up -d
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d db redis
 ```
 
-Without `REDIS_URL`, sessions fall back to in-memory and are lost on restart.
+For a full local Docker stack:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+```
+
+When running the app inside Compose, use the Docker service hostname in `.env`: `DATABASE_URL=postgres://postgres:postgres@db:5432/tgbot`. When running `pnpm dev` on the host against Compose Postgres, use `DATABASE_URL=postgres://postgres:postgres@localhost:5433/tgbot`.
+
+By default, the app is exposed on host port `3000`, local Postgres on `5433`, and Redis on `6380` to avoid clashing with existing local services. Override them in `.env` if needed:
+
+```dotenv
+APP_PORT=3001
+POSTGRES_PORT=55433
+REDIS_PORT=56380
+```
+
+For Redis-backed sessions while running on the host, set `REDIS_URL=redis://localhost:6380`. In the full Compose stack, leave `REDIS_URL` unset or set it to `redis://redis:6379`. Without `REDIS_URL`, sessions fall back to in-memory and are lost on restart.
 
 ### Running the Bot
 
@@ -68,7 +84,28 @@ pnpm set-webhook
 
 ### Docker deployment
 
-Production runs only the `app` service (webhook mode). Postgres + Redis are expected to be external (or use the `dev` profile locally).
+Coolify should run this project in Docker Compose deployment mode, using the repository default `docker-compose.yml` file. Do not use Nixpacks, do not enable dev profiles, and do not rely on a production `.env` file on disk.
+
+The production Compose stack starts the `app` service in webhook mode plus a Redis service. Postgres remains external: set `DATABASE_URL` in the Coolify dashboard along with the rest of the app environment.
+
+Required Coolify dashboard variables:
+
+- `TOKEN`
+- `DATABASE_URL`
+- `ADMIN_ID`
+- `NEXT_PUBLIC_DOMAIN`
+- `NEXT_PUBLIC_SITEKEY`
+
+Optional Coolify dashboard variables:
+
+- `OPENROUTER_API_KEY`
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `TG_API`
+- `TGWD_SECRET`
+- `VICTIM_ID`
+
+`REDIS_URL` may be left unset to use the Compose Redis service (`redis://redis:6379`), or set it explicitly to point at an external Redis.
 
 ```bash
 docker compose up --build -d
