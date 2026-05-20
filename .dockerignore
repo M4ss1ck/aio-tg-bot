@@ -9,6 +9,9 @@ dist
 .turbo
 
 # Development
+.env
+.env.*
+!.env.example
 .env*.local
 .env.development
 *.log

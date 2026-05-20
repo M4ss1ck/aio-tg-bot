@@ -109,8 +109,8 @@ export const createBot = async (token: string) => {
 export const loadBot = async (id: string) => {
     try {
         if (id === 'default') {
-            const { bot } = await import('../telegram/bot')
-            return bot
+            const { getBot } = await import('../telegram/bot')
+            return getBot()
         } else {
             const botInDB = await prisma.bot.findUnique({
                 where: {

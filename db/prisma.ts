@@ -1,4 +1,4 @@
-import { PrismaClient } from './generated/prisma/client.js'
+import { PrismaClient } from './generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 declare global {
@@ -17,8 +17,15 @@ function createPrismaClient(): PrismaClient {
     return new PrismaClient({ adapter })
 }
 
-export const prisma = global.prisma ?? createPrismaClient()
-
-if (process.env.NODE_ENV !== 'production') {
-    global.prisma = prisma
+function getPrismaClient(): PrismaClient {
+    global.prisma ??= createPrismaClient()
+    return global.prisma
 }
+
+export const prisma = new Proxy({} as PrismaClient, {
+    get(_target, property, receiver) {
+        const client = getPrismaClient()
+        const value = Reflect.get(client, property, receiver)
+        return typeof value === 'function' ? value.bind(client) : value
+    },
+})

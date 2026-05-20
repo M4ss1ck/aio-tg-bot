@@ -14,13 +14,15 @@ WORKDIR /app
 # Build tools for native modules (sharp / vips)
 RUN apk add --no-cache python3 make g++ vips-dev
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # ---- Builder ----
 FROM base AS builder
 WORKDIR /app
+
+RUN apk add --no-cache vips vips-cpp
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -35,7 +37,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Runtime deps for sharp
-RUN apk add --no-cache vips
+RUN apk add --no-cache vips vips-cpp
 
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs

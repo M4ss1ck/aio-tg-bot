@@ -1,9 +1,6 @@
 import { webhookCallback } from "grammy";
-import { bot } from "../../../telegram/bot"
+import { getBot, loadUsers } from "../../../telegram/bot"
 import { logger } from "../../../utils/logger"
-
-// Create grammY webhook handler
-const handleUpdate = webhookCallback(bot, "std/http");
 
 export async function POST(request: Request) {
     if (!request.body) {
@@ -11,6 +8,8 @@ export async function POST(request: Request) {
     }
 
     try {
+        await loadUsers()
+        const handleUpdate = webhookCallback(getBot(), "std/http");
         return await handleUpdate(request);
     } catch (error) {
         logger.error('Error handling bot update:', error);

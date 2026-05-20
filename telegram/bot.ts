@@ -30,56 +30,80 @@ import { getUsers } from './global/data'
 import type { MyContext, SessionData } from './types'
 import { getRedisStorage } from './session/redis'
 
-global.USUARIOS = await getUsers()
+global.USUARIOS ??= {}
 
-export const bot = new Bot<MyContext>(token, {
-    client: {
-        apiRoot: tgAPI,
-        timeoutSeconds: 30,
-    },
-})
+let usersReady: Promise<void> | undefined
 
-localDB.set('currentToken', token)
+export function loadUsers(): Promise<void> {
+    usersReady ??= getUsers().then((users) => {
+        global.USUARIOS = users
+    }).catch((error) => {
+        usersReady = undefined
+        throw error
+    })
 
-bot.use(hydrate())
-bot.api.config.use(parseMode('HTML'))
-bot.api.config.use(autoRetry({
-    maxRetryAttempts: 3,
-    maxDelaySeconds: 5,
-}))
+    return usersReady
+}
 
-bot.use(session({
-    initial: (): SessionData => ({ lang: 'en' }),
-    storage: getRedisStorage(),
-    getSessionKey: (ctx) => ctx.from?.id?.toString(),
-}))
+let botInstance: Bot<MyContext> | undefined
 
-// i18n must come after session (uses ctx.session) and before middleware that uses ctx.t
-bot.use(i18n)
+function createMainBot(): Bot<MyContext> {
+    const bot = new Bot<MyContext>(token, {
+        client: {
+            apiRoot: tgAPI,
+            timeoutSeconds: 30,
+        },
+    })
 
-bot
-    .use(start)
-    .use(clone)
-    .use(createUser)
-    .use(loggerMiddleware)
-    .use(admin)
-    .use(afk)
-    .use(ban)
-    .use(actions)
-    .use(commands)
-    .use(reputation)
-    .use(gallery)
-    .use(urban)
-    .use(love)
-    .use(inline)
-    .use(replacer)
-    .use(polls)
-    .use(qr)
-    .use(ai)
-    .use(stickers)
-    .use(filtros)
+    localDB.set('currentToken', token)
 
-bot.catch((err) => {
-    logger.error('Bot general error!')
-    logger.error(err)
-})
+    bot.use(hydrate())
+    bot.api.config.use(parseMode('HTML'))
+    bot.api.config.use(autoRetry({
+        maxRetryAttempts: 3,
+        maxDelaySeconds: 5,
+    }))
+
+    bot.use(session({
+        initial: (): SessionData => ({ lang: 'en' }),
+        storage: getRedisStorage(),
+        getSessionKey: (ctx) => ctx.from?.id?.toString(),
+    }))
+
+    // i18n must come after session (uses ctx.session) and before middleware that uses ctx.t
+    bot.use(i18n)
+
+    bot
+        .use(start)
+        .use(clone)
+        .use(createUser)
+        .use(loggerMiddleware)
+        .use(admin)
+        .use(afk)
+        .use(ban)
+        .use(actions)
+        .use(commands)
+        .use(reputation)
+        .use(gallery)
+        .use(urban)
+        .use(love)
+        .use(inline)
+        .use(replacer)
+        .use(polls)
+        .use(qr)
+        .use(ai)
+        .use(stickers)
+        .use(filtros)
+
+    bot.catch((err) => {
+        logger.error('Bot general error!')
+        logger.error(err)
+    })
+
+    return bot
+}
+
+export function getBot(): Bot<MyContext> {
+    botInstance ??= createMainBot()
+    return botInstance
+}
