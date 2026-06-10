@@ -1,6 +1,8 @@
 services:
   app:
     env_file: .env
+    ports:
+      - '${APP_PORT:-3000}:3000'
     depends_on:
       db:
         condition: service_healthy

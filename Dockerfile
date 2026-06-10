@@ -48,6 +48,7 @@ COPY --from=builder /app/.next/static ./.next/static
 
 # i18next-fs-backend reads JSON locales from cwd/locales at runtime
 COPY --from=builder /app/locales ./locales
+COPY --from=builder /app/scripts/start-production.mjs ./scripts/start-production.mjs
 
 RUN chown -R nextjs:nodejs /app
 
@@ -58,4 +59,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["node", "scripts/start-production.mjs"]

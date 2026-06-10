@@ -86,7 +86,7 @@ pnpm set-webhook
 
 Coolify should run this project in Docker Compose deployment mode, using the repository default `docker-compose.yml` file. Do not use Nixpacks, do not enable dev profiles, and do not rely on a production `.env` file on disk.
 
-The production Compose stack starts the `app` service in webhook mode plus a Redis service. Postgres remains external: set `DATABASE_URL` in the Coolify dashboard along with the rest of the app environment.
+The production Compose stack starts the `app` service in webhook mode plus a Redis service. Postgres remains external: set `DATABASE_URL` in the Coolify dashboard along with the rest of the app environment. The compose file declares the variables Coolify needs to discover and inject.
 
 Required Coolify dashboard variables:
 
@@ -98,6 +98,8 @@ Required Coolify dashboard variables:
 
 Optional Coolify dashboard variables:
 
+- `SET_WEBHOOK_ON_START` (defaults to `true`; set to `false` to skip startup webhook registration)
+- `TG_WEBHOOK_SECRET` (shared secret used to verify Telegram webhook requests; leave unset to disable verification)
 - `OPENROUTER_API_KEY`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
@@ -107,11 +109,13 @@ Optional Coolify dashboard variables:
 
 `REDIS_URL` may be left unset to use the Compose Redis service (`redis://redis:6379`), or set it explicitly to point at an external Redis.
 
+Do not publish a host port for the production app. The compose file exposes container port `3000`; configure the Coolify domain/proxy to route to that port.
+
 ```bash
 docker compose up --build -d
 ```
 
-After the container is up, set the webhook once from your local machine (with prod env loaded):
+On production startup, `scripts/start-production.mjs` launches the Next.js standalone server and, once it is listening, registers `https://<NEXT_PUBLIC_DOMAIN>/api/bot` with Telegram (dropping pending updates and subscribing to all update types). Webhook registration is best-effort: if it fails, the server keeps running. For manual repair from your local machine, load the production env and run:
 
 ```bash
 pnpm set-webhook

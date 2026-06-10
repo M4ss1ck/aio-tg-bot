@@ -9,6 +9,7 @@
         "build": "pnpm prisma && next build",
         "build-only": "next build",
         "start": "next start",
+        "test": "node --import tsx --test",
         "lint": "next lint",
         "set-webhook": "tsx --env-file=.env scripts/set-webhook.ts",
         "studio": "prisma studio",

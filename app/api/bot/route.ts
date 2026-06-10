@@ -1,6 +1,7 @@
 import { webhookCallback } from "grammy";
 import { getBot, loadUsers } from "../../../telegram/bot"
 import { logger } from "../../../utils/logger"
+import { getWebhookSecretToken } from "../../../telegram/webhook-secret"
 
 export async function POST(request: Request) {
     if (!request.body) {
@@ -9,7 +10,9 @@ export async function POST(request: Request) {
 
     try {
         await loadUsers()
-        const handleUpdate = webhookCallback(getBot(), "std/http");
+        const handleUpdate = webhookCallback(getBot(), "std/http", {
+            secretToken: getWebhookSecretToken(),
+        });
         return await handleUpdate(request);
     } catch (error) {
         logger.error('Error handling bot update:', error);

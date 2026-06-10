@@ -1,4 +1,5 @@
 import { Bot, API_CONSTANTS } from 'grammy'
+import { getWebhookSecretToken } from '../telegram/webhook-secret'
 
 const token = process.env.TOKEN
 const domain = process.env.NEXT_PUBLIC_DOMAIN
@@ -22,6 +23,7 @@ try {
     await bot.api.setWebhook(webhookUrl, {
         drop_pending_updates: true,
         allowed_updates: API_CONSTANTS.ALL_UPDATE_TYPES,
+        secret_token: getWebhookSecretToken(),
     })
     console.log(`Webhook set: ${webhookUrl}`)
 } catch (error) {
