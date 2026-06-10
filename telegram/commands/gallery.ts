@@ -1,39 +1,42 @@
-import { Composer, Markup } from "telegraf";
-import type { MyContext } from "../interfaces";
-import { prisma } from "../../db/prisma";
-import { domain, photoLimitPerUser } from "../../config/constants";
-import { localDB } from "../../db/local";
-import { logger } from "../../utils/logger";
+import { Composer, InlineKeyboard } from 'grammy'
+import type { MyContext } from '../types'
+import { prisma } from '../../db/prisma'
+import { domain, photoLimitPerUser } from '../../config/constants'
+import { localDB } from '../../db/local'
+import { logger } from '../../utils/logger'
 
 const gallery = new Composer<MyContext>()
 
 gallery.command(['gallery', 'g'], async (ctx) => {
-    const galleryURL = `https://${domain}/gallery/${ctx.from.id}`
-    if (ctx.message.reply_to_message && 'photo' in ctx.message.reply_to_message) {
+    const galleryURL = `https://${domain}/gallery/${ctx.from?.id}`
+    if (ctx.message?.reply_to_message && 
+      'photo' in ctx.message.reply_to_message && 
+      ctx.message.reply_to_message.photo
+    ) {
         // get how many photos the user has
         const photos = await prisma.photo.count({
             where: {
-                userId: ctx.from.id.toString()
+                userId: ctx.from!.id.toString()
             }
         })
 
         if (photos >= photoLimitPerUser) {
-            return ctx.reply(`You have reached the maximum amount of photos allowed in your gallery`, Markup.inlineKeyboard([
-                Markup.button.webApp('Open Gallery', galleryURL)
-            ]))
+            const keyboard = new InlineKeyboard()
+                .webApp('Open Gallery', galleryURL)
+            return ctx.reply(`You have reached the maximum amount of photos allowed in your gallery`, { reply_markup: keyboard })
         }
 
 
         const msg = ctx.message.reply_to_message
-        const tgImage = msg.photo[msg.photo.length - 1]
-        const file = await ctx.telegram.getFile(tgImage.file_id)
+        const tgImage = ctx.message.reply_to_message.photo[ctx.message.reply_to_message.photo.length - 1]
+        const file = await ctx.api.getFile(tgImage.file_id)
 
 
         // Store the photo in the database
         const token = localDB.get('currentToken')
         await prisma.photo.create({
             data: {
-                userId: ctx.from.id.toString(),
+                userId: ctx.from!.id.toString(),
                 path: file.file_path as string,
                 caption: msg.caption,
                 width: tgImage.width,
@@ -42,10 +45,9 @@ gallery.command(['gallery', 'g'], async (ctx) => {
             }
         })
             .then(() => {
-                return ctx.reply(`Photo added to your carousel: ${galleryURL}`,
-                    Markup.inlineKeyboard([
-                        Markup.button.webApp('Open Gallery', galleryURL)
-                    ]));
+                const keyboard = new InlineKeyboard()
+                    .webApp('Open Gallery', galleryURL)
+                return ctx.reply(`Photo added to your carousel: ${galleryURL}`, { reply_markup: keyboard })
             })
             .catch((err) => {
                 logger.info('Error in gallery command')

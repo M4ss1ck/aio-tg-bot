@@ -1,15 +1,31 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from './generated/prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 declare global {
-    // allow global `var` declarations
-    // eslint-disable-next-line no-var
     var prisma: PrismaClient | undefined
 }
 
-export const prisma =
-    global.prisma ||
-    new PrismaClient({
-        log: [], // ['query'],
-    })
+function createPrismaClient(): PrismaClient {
+    const connectionString = process.env.DATABASE_URL
+    if (!connectionString) {
+        throw new Error('DATABASE_URL environment variable is not set')
+    }
 
-if (process.env.NODE_ENV !== 'production') global.prisma = prisma
+    console.log('[Prisma] Initializing with PostgreSQL adapter...')
+
+    const adapter = new PrismaPg({ connectionString })
+    return new PrismaClient({ adapter })
+}
+
+function getPrismaClient(): PrismaClient {
+    global.prisma ??= createPrismaClient()
+    return global.prisma
+}
+
+export const prisma = new Proxy({} as PrismaClient, {
+    get(_target, property, receiver) {
+        const client = getPrismaClient()
+        const value = Reflect.get(client, property, receiver)
+        return typeof value === 'function' ? value.bind(client) : value
+    },
+})

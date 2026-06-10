@@ -1,24 +1,33 @@
 services:
   app:
     build: .
-    ports:
-      - '3000:3000'
+    expose:
+      - '3000'
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/tgbot
-      - NEXT_PUBLIC_SITEKEY=${NEXT_PUBLIC_SITEKEY}
-      - NEXT_PUBLIC_DOMAIN=${NEXT_PUBLIC_DOMAIN}
-      - ADMIN_ID=${ADMIN_ID}
+      TOKEN: ${TOKEN:?TOKEN is required}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      ADMIN_ID: ${ADMIN_ID:?ADMIN_ID is required}
+      NEXT_PUBLIC_DOMAIN: ${NEXT_PUBLIC_DOMAIN:?NEXT_PUBLIC_DOMAIN is required}
+      NEXT_PUBLIC_SITEKEY: ${NEXT_PUBLIC_SITEKEY:?NEXT_PUBLIC_SITEKEY is required}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      SET_WEBHOOK_ON_START: ${SET_WEBHOOK_ON_START:-true}
+      TG_WEBHOOK_SECRET: ${TG_WEBHOOK_SECRET:-}
+      TG_API: ${TG_API:-https://api.telegram.org}
+      TGWD_SECRET: ${TGWD_SECRET:-}
+      VICTIM_ID: ${VICTIM_ID:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
     depends_on:
-      - db
+      redis:
+        condition: service_started
+    restart: unless-stopped
 
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tgbot
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - redis_data:/data
 
 volumes:
-  postgres_data:
+  redis_data:

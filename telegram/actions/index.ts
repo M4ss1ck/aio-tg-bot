@@ -1,7 +1,8 @@
-import { Composer } from 'telegraf'
+import { Composer } from 'grammy'
+import type { MyContext } from '../types'
 
-const actions = new Composer()
+const actions = new Composer<MyContext>()
 
-actions.action('del', ctx => ctx.deleteMessage())
+actions.callbackQuery('del', (ctx) => ctx.deleteMessage())
 
 export default actions

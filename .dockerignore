@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+out
+dist
+.turbo
+
+# Development
+.env
+.env.*
+!.env.example
+.env*.local
+.env.development
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation (not needed in image)
+doc/
+*.md
+!README.md
+
+# Tests
+__tests__
+*.test.ts
+*.spec.ts
+coverage
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Misc
+.DS_Store
+Thumbs.db

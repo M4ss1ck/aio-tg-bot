@@ -1,9 +1,9 @@
-import { Composer, Markup } from "telegraf";
+import { Composer, InlineKeyboard } from "grammy";
 import axios from "axios";
 
 import MarkdownParser from "../../utils/markdownParser";
 import { logger } from "../../utils/logger";
-import type { MyContext } from "../interfaces";
+import type { MyContext } from "../types";
 import { updateUser } from "../global/data";
 import { aiModels, adminId, cloudflareApiToken, cloudflareAccountId } from "../../config/constants";
 import { localDB } from "../../db/local";
@@ -45,6 +45,11 @@ ai.command("addpremium", async (ctx) => {
             return;
         }
 
+        if (!ctx.message) {
+            await ctx.reply("❌ Invalid command usage.");
+            return;
+        }
+
         // Get user ID from command arguments or replied message
         const commandArg = ctx.message.text.replace(/^\/addpremium\s*/, "").trim();
         let userIdToAdd = commandArg;
@@ -82,6 +87,11 @@ ai.command("removepremium", async (ctx) => {
         const userId = ctx.from?.id?.toString();
         if (!userId || userId !== adminId) {
             await ctx.reply("❌ Unauthorized. This command is only available to administrators.");
+            return;
+        }
+
+        if (!ctx.message) {
+            await ctx.reply("❌ Invalid command usage.");
             return;
         }
 
@@ -149,14 +159,17 @@ ai.command("ai_model", async (ctx) => {
     const sortedModels = [...freeModels, ...premiumModels];
 
     const text = "Select your AI model";
-    const buttons = sortedModels.map((model, index) => {
+
+    // Build inline keyboard with model buttons
+    const keyboard = new InlineKeyboard();
+    sortedModels.forEach((model) => {
         // Find original index in aiModels array for callback data
         const originalIndex = aiModels.findIndex(m => m.model === model.model);
 
         // Add visual indicator for premium models
         const modelName = model.premium ? `🔒 ${model.name} (Premium)` : model.name;
 
-        return [Markup.button.callback(modelName, `set_model_${originalIndex}`)];
+        keyboard.text(modelName, `set_model_${originalIndex}`).row();
     });
 
     // Add explanation for non-premium users
@@ -164,16 +177,16 @@ ai.command("ai_model", async (ctx) => {
         ? ""
         : "\n\n🔒 Premium models require special access.";
 
-    await ctx.reply(text + explanation,
-        Markup.inlineKeyboard(buttons)
-    );
+    await ctx.reply(text + explanation, { reply_markup: keyboard });
 });
 
-ai.action(/set_model_(\d+)/i, async ctx => {
-    if ('data' in ctx.callbackQuery && ctx.from?.id) {
-        await ctx.answerCbQuery().catch(e => logger.error(e));
-        const [, indexString] = ctx.callbackQuery.data.match(/set_model_(\d+)/i) || [null, '1'];
-        const index = parseInt(indexString ?? '1');
+ai.callbackQuery(/set_model_(\d+)/i, async ctx => {
+    await ctx.answerCallbackQuery().catch(e => logger.error(e));
+    
+    if (ctx.callbackQuery.data && ctx.from?.id) {
+        const match = ctx.callbackQuery.data.match(/set_model_(\d+)/i);
+        const indexString = match?.[1] ?? '0';
+        const index = parseInt(indexString);
         const selectedModel = aiModels[index];
 
         // Check if user is trying to select a premium model without premium access
@@ -197,6 +210,11 @@ ai.command(["ai", "ia"], async (ctx) => {
         return;
     }
 
+    if (!ctx.message) {
+        await ctx.reply("❌ Invalid command usage.");
+        return;
+    }
+
     let model = ctx.model ?? aiModels[0].model;
 
     // Premium model access validation
@@ -210,11 +228,11 @@ ai.command(["ai", "ia"], async (ctx) => {
             await ctx.reply(
                 `⚠️ You don't have access to premium models. I've switched you to ${fallbackModel.name} instead.\n\n` +
                 "To access premium models, please contact an administrator.",
-                { reply_to_message_id: ctx.message.message_id }
+                { reply_parameters: { message_id: ctx.message.message_id } }
             );
         } else {
             await ctx.reply("No free models available. Please contact the bot owner.", {
-                reply_to_message_id: ctx.message.message_id,
+                reply_parameters: { message_id: ctx.message.message_id },
             });
             return;
         }
@@ -245,7 +263,7 @@ ai.command(["ai", "ia"], async (ctx) => {
             if ('photo' in ctx.message && Array.isArray(ctx.message.photo) && ctx.message.photo.length > 0) {
                 const photo = ctx.message.photo.pop();
                 if (photo) {
-                    const file = await ctx.telegram.getFile(photo.file_id);
+                    const file = await ctx.api.getFile(photo.file_id);
                     const fileUrl = `https://api.telegram.org/file/bot${process.env.TOKEN}/${file.file_path}`;
                     const response = await axios({
                         method: 'get',
@@ -279,7 +297,7 @@ ai.command(["ai", "ia"], async (ctx) => {
             if (ctx.message.reply_to_message && 'photo' in ctx.message.reply_to_message && Array.isArray(ctx.message.reply_to_message.photo) && ctx.message.reply_to_message.photo.length > 0) {
                 const photo = ctx.message.reply_to_message.photo.pop();
                 if (photo) {
-                    const file = await ctx.telegram.getFile(photo.file_id);
+                    const file = await ctx.api.getFile(photo.file_id);
                     const fileUrl = `https://api.telegram.org/file/bot${process.env.TOKEN}/${file.file_path}`;
                     const response = await axios({
                         method: 'get',
@@ -376,7 +394,7 @@ ai.command(["ai", "ia"], async (ctx) => {
                         res = await attemptApiCall(fallbackModel.model, finalProvider);
                         await ctx.reply(
                             `⚠️ The model "${modelObj?.name}" is currently unavailable. I've switched to "${fallbackModel.name}" for this request.`,
-                            { reply_to_message_id: ctx.message.message_id }
+                            { reply_parameters: { message_id: ctx.message.message_id } }
                         );
                     } catch (fallbackError) {
                         logger.error(`Fallback model ${fallbackModel.model} also failed:`, fallbackError);
@@ -417,14 +435,14 @@ ai.command(["ai", "ia"], async (ctx) => {
                 for (let i = 0; i < chunks; i++) {
                     const index = 4096 * i;
                     await ctx.reply(parsedResponse.substring(index, index + 4096), {
-                        reply_to_message_id: ctx.message.message_id,
-                        disable_web_page_preview: true,
+                        reply_parameters: { message_id: ctx.message.message_id },
+                        link_preview_options: { is_disabled: true },
                     });
                 }
             } else {
                 await ctx.reply(parsedResponse, {
-                    reply_to_message_id: ctx.message.message_id,
-                    disable_web_page_preview: true,
+                    reply_parameters: { message_id: ctx.message.message_id },
+                    link_preview_options: { is_disabled: true },
                 });
             }
         } catch (error) {
@@ -447,13 +465,13 @@ ai.command(["ai", "ia"], async (ctx) => {
             }
 
             await ctx.reply(errorMessage, {
-                reply_to_message_id: ctx.message.message_id,
+                reply_parameters: { message_id: ctx.message.message_id },
             });
         }
     } else {
         const msg = ctx.t("You need to write more than that") as string;
         await ctx.reply(msg, {
-            reply_to_message_id: ctx.message.message_id,
+            reply_parameters: { message_id: ctx.message.message_id },
         });
     }
 });

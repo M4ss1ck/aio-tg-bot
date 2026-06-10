@@ -1,8 +1,9 @@
 import { prisma } from '../../db/prisma'
-
+import { logger } from '../../utils/logger'
 import type { User } from '../global'
 
 export const getUsers = async () => {
+  logger.info('[getUsers] Starting query...')
   const users: User[] = await prisma.user.findMany({
     select: {
       tg_id: true,
@@ -13,6 +14,7 @@ export const getUsers = async () => {
       model: true,
     },
   })
+  logger.info(`[getUsers] Found ${users.length} users`)
   const userObject: Record<string, User> = users.reduce(
     (prev, curr) => ({ ...prev, [curr.tg_id]: curr }),
     {},
@@ -36,7 +38,7 @@ export const updateUser = async (user: User) => {
     global.USUARIOS = await getUsers()
     return true
   } catch (error) {
-    console.log(error)
+    logger.error(error)
     return false
   }
 }
@@ -59,6 +61,6 @@ export const saveResultsInDB = async (results: any, query: string) => {
       }
     })
   } catch (error) {
-    console.log(error)
+    logger.error(error)
   }
 }
