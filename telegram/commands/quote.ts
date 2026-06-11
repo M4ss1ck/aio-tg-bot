@@ -5,6 +5,7 @@ import { toCachedMessage } from '../quote/message'
 import { getAvatar } from '../quote/avatar'
 import { fetchMediaDataUrl } from '../quote/media'
 import { renderQuote, type QuoteEntry } from '../quote/render'
+import { logger } from '../../utils/logger'
 import type { CachedMessage } from '../quote/types'
 import type { MyContext } from '../types'
 
@@ -24,14 +25,32 @@ quote.command(['quote', 'q'], async (ctx) => {
         return
     }
 
-    const count = clampCount(parseInt(ctx.match.trim(), 10) || 1)
+    const requested = clampCount(parseInt(ctx.match.trim(), 10) || 1)
+    const repliedId = reply.message_id
+    // The replied message is always available from the update itself; use it as
+    // the fallback and as a selection anchor when the cache lacks it.
+    const anchor = toCachedMessage(reply)
 
-    let messages: CachedMessage[] = []
-    if (count > 1 && ctx.chat) {
-        messages = selectMessages(await getCachedMessages(ctx.chat.id), reply.message_id, count)
+    let messages: CachedMessage[] = [anchor]
+    let cachedCount = 0
+    if (requested > 1 && ctx.chat) {
+        const cached = await getCachedMessages(ctx.chat.id)
+        cachedCount = cached.length
+        const pool = cached.some(m => m.message_id === repliedId) ? cached : [...cached, anchor]
+        const selected = selectMessages(pool, repliedId, requested)
+        if (selected.length > 0) messages = selected
     }
-    if (messages.length === 0) {
-        messages = [toCachedMessage(reply)]
+
+    logger.info(
+        `[quote] chat=${ctx.chat?.id} user=${ctx.from?.id} requested=${requested} `
+        + `repliedId=${repliedId} cached=${cachedCount} selected=${messages.length} `
+        + `ids=[${messages.map(m => m.message_id).join(',')}]`,
+    )
+    if (requested > 1 && cachedCount === 0) {
+        logger.warn(
+            '[quote] no cached messages for this chat, so only the replied message can be quoted. '
+            + 'In groups the bot needs privacy mode disabled (or admin rights) to see normal messages.',
+        )
     }
 
     try {
@@ -70,7 +89,7 @@ quote.command(['quote', 'q'], async (ctx) => {
             reply_parameters: { message_id: message.message_id },
         })
     } catch (error) {
-        console.error('[quote] failed to build quote sticker', error)
+        logger.error('[quote] failed to build quote sticker', error)
         await ctx
             .reply(ctx.t('Could not create the quote sticker.') as string, {
                 reply_parameters: { message_id: message.message_id },

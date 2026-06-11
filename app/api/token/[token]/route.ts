@@ -1,7 +1,7 @@
 import { webhookCallback } from "grammy";
 import { logger } from "../../../../utils/logger"
 import { createBot } from "../../../../utils/multibots"
-import { getWebhookOptions } from "../../../../telegram/webhook-options"
+import { getWebhookOptions, logIncomingUpdate } from "../../../../telegram/webhook-options"
 
 export async function POST(
     request: Request,
@@ -10,6 +10,7 @@ export async function POST(
     const token = params.token;
     let creationTimeout: ReturnType<typeof setTimeout> | undefined;
     try {
+        await logIncomingUpdate(request, token.split(':')[0])
         // Race creation against a timeout that rejects into this try/catch.
         // A bare `setTimeout(() => throw)` would surface as an uncaught
         // exception and crash the whole server (all bots) instead.

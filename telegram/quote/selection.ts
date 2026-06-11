@@ -9,13 +9,17 @@ export function clampCount(n: number): number {
 }
 
 /**
- * From the cached messages, return up to `count` consecutive messages starting
- * at the replied-to message and moving forward (towards newer messages).
- * Returns an empty array when the replied message is not in the cache.
+ * Return the replied-to message together with up to `count - 1` messages that
+ * came immediately before it, in chronological order. The replied message is
+ * always the most recent one in the result. Fewer messages are returned when
+ * there aren't enough earlier ones. Returns an empty array when the replied
+ * message is not in the cache.
  */
 export function selectMessages(cached: CachedMessage[], repliedId: number, count: number): CachedMessage[] {
     const sorted = [...cached].sort((a, b) => a.message_id - b.message_id)
-    const start = sorted.findIndex(m => m.message_id === repliedId)
-    if (start === -1) return []
-    return sorted.slice(start, start + clampCount(count))
+    const index = sorted.findIndex(m => m.message_id === repliedId)
+    if (index === -1) return []
+
+    const start = Math.max(0, index - (clampCount(count) - 1))
+    return sorted.slice(start, index + 1)
 }

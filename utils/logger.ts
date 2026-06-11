@@ -2,7 +2,7 @@ import pkg from 'signale'
 const { Signale } = pkg
 
 const options = {
-    logLevel: 'info',
+    logLevel: process.env.LOG_LEVEL ?? 'info',
 }
 
 export const logger = new Signale(options)
