@@ -22,6 +22,8 @@ import createUser from '../telegram/commands/createUser'
 import loggerMiddleware from '../telegram/middleware/commandLogger'
 import ban from '../telegram/commands/ban'
 import qr from '../telegram/commands/qr'
+import quote from '../telegram/commands/quote'
+import messageCache from '../telegram/middleware/messageCache'
 import i18n from '../telegram/middleware/i18n'
 import stickers from '../telegram/commands/stickers'
 import gallery from '../telegram/commands/gallery'
@@ -77,6 +79,7 @@ export const createBot = async (token: string) => {
             .use(start)
             .use(createUser)
             .use(loggerMiddleware)
+            .use(messageCache)
             .use(admin)
             .use(ban)
             .use(actions)
@@ -89,6 +92,7 @@ export const createBot = async (token: string) => {
             .use(replacer)
             .use(polls)
             .use(qr)
+            .use(quote)
             .use(ai)
             .use(stickers)
             .use(filtros)

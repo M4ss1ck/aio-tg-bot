@@ -7,10 +7,9 @@ const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
 let redis: Redis | null = null
 let redisStorage: RedisAdapter<SessionData> | null = null
 
-export function getRedisStorage(): RedisAdapter<SessionData> | undefined {
+function connect(): Redis | null {
     if (!process.env.REDIS_URL) {
-        console.log('[session] No REDIS_URL set, using in-memory storage')
-        return undefined
+        return null
     }
 
     if (!redis) {
@@ -23,9 +22,25 @@ export function getRedisStorage(): RedisAdapter<SessionData> | undefined {
         })
     }
 
+    return redis
+}
+
+/** Raw ioredis client, sharing the connection used by the session storage. */
+export function getRedisClient(): Redis | null {
+    return connect()
+}
+
+export function getRedisStorage(): RedisAdapter<SessionData> | undefined {
+    if (!process.env.REDIS_URL) {
+        console.log('[session] No REDIS_URL set, using in-memory storage')
+        return undefined
+    }
+
+    const instance = connect()!
+
     if (!redisStorage) {
         redisStorage = new RedisAdapter<SessionData>({
-            instance: redis,
+            instance,
             ttl: 60 * 60 * 24 * 30, // 30 days
         })
     }

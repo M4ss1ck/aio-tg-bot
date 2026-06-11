@@ -19,8 +19,10 @@ import polls from './commands/polls'
 import admin from './commands/admin'
 import createUser from './commands/createUser'
 import loggerMiddleware from './middleware/commandLogger'
+import messageCache from './middleware/messageCache'
 import ban from './commands/ban'
 import qr from './commands/qr'
+import quote from './commands/quote'
 import i18n from './middleware/i18n'
 import afk from './commands/afk'
 import stickers from './commands/stickers'
@@ -78,6 +80,7 @@ function createMainBot(): Bot<MyContext> {
         .use(clone)
         .use(createUser)
         .use(loggerMiddleware)
+        .use(messageCache)
         .use(admin)
         .use(afk)
         .use(ban)
@@ -91,6 +94,7 @@ function createMainBot(): Bot<MyContext> {
         .use(replacer)
         .use(polls)
         .use(qr)
+        .use(quote)
         .use(ai)
         .use(stickers)
         .use(filtros)
