@@ -2,7 +2,6 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from './Card'
-import Me from "../public/images/square_me.png"
 
 export const HomeCards = () => {
     return (
@@ -41,7 +40,7 @@ export const HomeCards = () => {
                     } />
                 </Link>
                 <Link href={"/about"}>
-                    <Card title="About Me" icon={<Image className='rounded-full' width={64} height={64} src={Me} alt='about me picture' />} />
+                    <Card title="About Me" icon={<Image className='rounded-full' width={64} height={64} src="/images/square_me.jpg" alt='about me picture' unoptimized />} />
                 </Link>
             </div>
         </section>

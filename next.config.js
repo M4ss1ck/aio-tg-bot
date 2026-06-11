@@ -3,6 +3,9 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
+  experimental: {
+    serverComponentsExternalPackages: ["@resvg/resvg-js"],
+  },
   images: {
     remotePatterns: [
       {
