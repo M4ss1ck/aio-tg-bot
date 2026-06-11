@@ -8,18 +8,21 @@ export async function POST(
     { params }: { params: { token: string } }
 ) {
     const token = params.token;
+    let creationTimeout: ReturnType<typeof setTimeout> | undefined;
     try {
-        const botCreationTimeout = setTimeout(() => {
-            throw new Error('Bot creation timed out');
-        }, 10000);
-        const bot = await createBot(token as string)
+        // Race creation against a timeout that rejects into this try/catch.
+        // A bare `setTimeout(() => throw)` would surface as an uncaught
+        // exception and crash the whole server (all bots) instead.
+        const bot = await Promise.race([
+            createBot(token as string),
+            new Promise<never>((_, reject) => {
+                creationTimeout = setTimeout(() => reject(new Error('Bot creation timed out')), 10000);
+            }),
+        ]);
 
         if (!bot) {
-            clearTimeout(botCreationTimeout)
             return Response.json({}, { status: 200 });
         }
-        
-        clearTimeout(botCreationTimeout);
 
         // Use grammY's webhookCallback for proper update handling
         const handleUpdate = webhookCallback(bot, "std/http", getWebhookOptions());
@@ -30,5 +33,7 @@ export async function POST(
             logger.debug(error.stack);
         }
         return Response.json({}, { status: 200 });
+    } finally {
+        clearTimeout(creationTimeout);
     }
 }

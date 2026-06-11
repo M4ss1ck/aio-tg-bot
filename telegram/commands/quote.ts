@@ -37,14 +37,24 @@ quote.command(['quote', 'q'], async (ctx) => {
     try {
         await ctx.replyWithChatAction('choose_sticker').catch(() => {})
 
-        const entries: QuoteEntry[] = []
-        for (const m of messages) {
-            const avatar = await getAvatar(ctx, m.from)
-            let media: QuoteEntry['media']
-            if (m.media) {
-                media = await fetchMediaDataUrl(ctx, m.media.fileId, m.media.width, m.media.height)
+        // Dedupe avatar fetches per author (grouped messages share a sender) and
+        // resolve all avatars/media in parallel so latency doesn't scale with N.
+        const avatars = new Map<number, ReturnType<typeof getAvatar>>()
+        const avatarFor = (user: { id: number; name: string }) => {
+            let pending = avatars.get(user.id)
+            if (!pending) {
+                pending = getAvatar(ctx, user)
+                avatars.set(user.id, pending)
             }
-            entries.push({
+            return pending
+        }
+
+        const entries: QuoteEntry[] = await Promise.all(messages.map(async (m) => {
+            const [avatar, media] = await Promise.all([
+                avatarFor(m.from),
+                m.media ? fetchMediaDataUrl(ctx, m.media.fileId, m.media.width, m.media.height) : undefined,
+            ])
+            return {
                 userId: m.from.id,
                 name: m.from.name,
                 colorId: m.colorId,
@@ -52,8 +62,8 @@ quote.command(['quote', 'q'], async (ctx) => {
                 text: m.text,
                 media,
                 reply: m.reply,
-            })
-        }
+            }
+        }))
 
         const webp = await renderQuote(entries)
         await ctx.replyWithSticker(new InputFile(webp), {
