@@ -1,8 +1,5 @@
 import { readFile } from 'fs/promises'
-import { createRequire } from 'module'
 import path from 'path'
-
-const require = createRequire(import.meta.url)
 
 export interface SatoriFont {
     name: string
@@ -13,11 +10,16 @@ export interface SatoriFont {
 
 let cache: SatoriFont[] | null = null
 
-/** Load Roboto (regular/medium/bold) from the bundled @fontsource/roboto package. */
+const fontsDir = path.join(process.cwd(), 'public', 'fonts', 'quote')
+
+export function getFontPath(weight: SatoriFont['weight']): string {
+    return path.join(fontsDir, `roboto-all-${weight}-normal.woff`)
+}
+
+/** Load Roboto (regular/medium/bold) from traceable app-owned assets. */
 export async function getFonts(): Promise<SatoriFont[]> {
     if (cache) return cache
-    const dir = path.dirname(require.resolve('@fontsource/roboto/package.json'))
-    const load = (weight: number) => readFile(path.join(dir, 'files', `roboto-all-${weight}-normal.woff`))
+    const load = (weight: SatoriFont['weight']) => readFile(getFontPath(weight))
     const [regular, medium, bold] = await Promise.all([load(400), load(500), load(700)])
     cache = [
         { name: 'Roboto', data: regular, weight: 400, style: 'normal' },

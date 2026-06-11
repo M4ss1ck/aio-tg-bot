@@ -1,6 +1,7 @@
 import { webhookCallback } from "grammy";
 import { logger } from "../../../../utils/logger"
 import { createBot } from "../../../../utils/multibots"
+import { getWebhookOptions } from "../../../../telegram/webhook-options"
 
 export async function POST(
     request: Request,
@@ -21,7 +22,7 @@ export async function POST(
         clearTimeout(botCreationTimeout);
 
         // Use grammY's webhookCallback for proper update handling
-        const handleUpdate = webhookCallback(bot, "std/http");
+        const handleUpdate = webhookCallback(bot, "std/http", getWebhookOptions());
         return await handleUpdate(request);
     } catch (error) {
         logger.error('Error handling bot:', error);
