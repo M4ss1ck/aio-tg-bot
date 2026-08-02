@@ -16,6 +16,7 @@ test('renderQuote produces a valid sticker-sized webp', async () => {
     const webp = await renderQuote([entry({})])
     const meta = await sharp(webp).metadata()
     assert.equal(meta.format, 'webp')
+    assert.equal(meta.hasAlpha, true)
     assert.ok(meta.width && meta.width <= 512, `width ${meta.width} <= 512`)
     assert.ok(meta.height && meta.height <= 512, `height ${meta.height} <= 512`)
 })

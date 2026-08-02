@@ -17,7 +17,6 @@ export interface QuoteEntry {
 // Telegram-style name colors, indexed by colorId.
 const NAME_COLORS = ['#e17076', '#eda86c', '#a695e7', '#7bc862', '#6ec9cb', '#65aadd', '#ee7aae']
 
-const BG = '#17212b'
 const BUBBLE = '#1f2c3a'
 const TEXT = '#ffffff'
 const SECONDARY = '#8b98a5'
@@ -140,7 +139,7 @@ function buildTree(entries: QuoteEntry[]): SNode {
         alignItems: 'flex-start',
         gap: 8,
         padding: 12,
-        backgroundColor: BG,
+        backgroundColor: 'transparent',
     }, groups.map(groupNode))
 }
 
