@@ -2,15 +2,13 @@
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  swcMinify: true,
-  experimental: {
-    serverComponentsExternalPackages: ["@resvg/resvg-js"],
-  },
+  serverExternalPackages: ["@resvg/resvg-js"],
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "avatars.githubusercontent.com",
+        hostname: "www.massick.dev",
+        pathname: "/api/media/**",
       },
     ],
   },

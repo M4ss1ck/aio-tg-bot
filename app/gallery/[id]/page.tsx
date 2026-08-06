@@ -2,10 +2,11 @@ import { prisma } from '../../../db/prisma'
 import { pathToTgLink } from '../../../utils/functions'
 import { Gallery } from '../../../components/Gallery'
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
     const photos = await prisma.photo.findMany({
         where: {
-            userId: params.id
+            userId: id
         }
     })
     if (!photos || photos.length === 0) return (<main className="flex flex-col items-center justify-center w-full h-full min-h-screen">

@@ -5,9 +5,9 @@ import { getWebhookOptions, logIncomingUpdate } from "../../../../telegram/webho
 
 export async function POST(
     request: Request,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
-    const token = params.token;
+    const { token } = await params;
     let creationTimeout: ReturnType<typeof setTimeout> | undefined;
     try {
         await logIncomingUpdate(request, token.split(':')[0])
