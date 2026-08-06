@@ -1,6 +1,9 @@
 import { prisma } from '../../../db/prisma'
 import { pathToTgLink } from '../../../utils/functions'
 import { Gallery } from '../../../components/Gallery'
+import { Back } from '../../../components/Back'
+import { PageHeading } from '../../../components/PageHeading'
+import { StateMessage } from '../../../components/StateMessage'
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -9,13 +12,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             userId: id
         }
     })
-    if (!photos || photos.length === 0) return (<main className="flex flex-col items-center justify-center w-full h-full min-h-screen">
-        <h1 className="p-4 text-4xl">Your Personal Gallery is Empty</h1>
-        <section className="flex flex-col items-center justify-center gap-2 p-6 my-6">
-            <p className="text-xl">But you can now create it using <code>/gallery</code> command replying to photos</p>
-            <p className="text-lg">Try it out!</p>
+    if (!photos || photos.length === 0) return (
+        <section className="flex flex-col items-center gap-4 py-6 text-center">
+            <PageHeading>Your Gallery is Empty</PageHeading>
+            <StateMessage
+                title="Nothing here yet"
+                body="Create your gallery with the /gallery command, replying to photos."
+            />
+            <Back />
         </section>
-    </main>)
+    )
 
     const photosWithLink = await Promise.all(photos.map(async photo => {
         const response = await fetch(pathToTgLink(photo.path, photo.token))
@@ -34,8 +40,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     }
 
     return (
-        <main>
+        <section className="flex flex-col gap-4 py-6">
+            <PageHeading>Your Gallery</PageHeading>
             <Gallery photos={photosWithLink} />
-        </main>
+            <div className="flex justify-center">
+                <Back />
+            </div>
+        </section>
     )
 }
