@@ -1,24 +1,14 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { Back } from './Back'
+import { useSyncExternalStore } from 'react'
 import { PageHeading } from './PageHeading'
 import { StateMessage } from './StateMessage'
 
 export const UserInfo = () => {
-    const [userData, setUserData] = useState<string>('')
-
-    useEffect(() => {
-        const raw = window.Telegram?.WebApp?.initData
-        if (!raw) return
-
-        for (const pair of decodeURIComponent(raw).split('&')) {
-            const [key, ...rest] = pair.split('=')
-            if (key === 'user') {
-                setUserData(rest.join('='))
-                return
-            }
-        }
-    }, [])
+    const userData = useSyncExternalStore(
+        () => () => {},
+        () => readTelegramUserData(),
+        () => '',
+    )
 
     return (
         <section className="flex flex-col items-center gap-4 py-6">
@@ -34,8 +24,17 @@ export const UserInfo = () => {
                     body="Open this page inside Telegram to see the data it shares with this bot."
                 />
             )}
-
-            <Back />
         </section>
     )
+}
+
+function readTelegramUserData(): string {
+    const raw = window.Telegram?.WebApp?.initData
+    if (!raw) return ''
+
+    for (const pair of decodeURIComponent(raw).split('&')) {
+        const [key, ...rest] = pair.split('=')
+        if (key === 'user') return rest.join('=')
+    }
+    return ''
 }

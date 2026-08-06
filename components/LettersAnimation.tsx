@@ -10,16 +10,17 @@ const LettersAnimation = ({ title }: { title: string }) => {
         for (let i = 0; i < letters.length; i++) {
             const letter = letters[i]
             letter.style.visibility = 'visible'
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) continue
             duration += 100
             letter.animate(
                 [
-                    { transform: `translateY(-100vh) scale(0,0)` },
+                    { transform: `translateY(-100dvh) scale(0,0)` },
                     { transform: `translateY(0) scale(1,1)` },
                 ],
                 { duration: duration, iterations: 1, easing: "ease-in-out" }
             )
         }
-    }, [])
+    }, [title])
     return (
         <h1
             aria-label={title}

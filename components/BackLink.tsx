@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useEffect } from "react"
 
 /**
@@ -10,10 +10,11 @@ import { useEffect } from "react"
  */
 export const BackLink = () => {
     const router = useRouter()
+    const pathname = usePathname()
 
     useEffect(() => {
         const backButton = window.Telegram?.WebApp?.BackButton
-        if (!backButton) return
+        if (!backButton || pathname === "/") return
 
         const handleBack = () => router.push("/")
         backButton.show()
@@ -23,7 +24,9 @@ export const BackLink = () => {
             backButton.offClick(handleBack)
             backButton.hide()
         }
-    }, [router])
+    }, [pathname, router])
+
+    if (pathname === "/") return null
 
     return (
         <Link

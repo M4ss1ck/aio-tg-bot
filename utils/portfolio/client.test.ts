@@ -165,6 +165,21 @@ test("getProjects throws ProjectsUnavailableError on an unexpected body", async 
     )
 })
 
+test("getProjects throws ProjectsUnavailableError when docs contains malformed data", async () => {
+    process.env.PORTFOLIO_API_URL = BASE
+
+    await withStubbedFetch(
+        () =>
+            new Response(JSON.stringify({ docs: [null], hasNextPage: false }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            }),
+        async () => {
+            await assert.rejects(() => getProjects("en"), ProjectsUnavailableError)
+        },
+    )
+})
+
 test("getProjects throws when PORTFOLIO_API_URL is missing", async () => {
     const previous = process.env.PORTFOLIO_API_URL
     delete process.env.PORTFOLIO_API_URL

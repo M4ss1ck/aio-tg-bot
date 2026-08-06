@@ -1,9 +1,10 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import { HomeCards } from './HomeCards'
 import LettersAnimation from './LettersAnimation'
 
 type LoginStatus = 'pending' | 'in-telegram' | 'outside-telegram'
+const PENDING_SNAPSHOT = '__telegram_pending__'
 
 function readTelegramName(): string | null {
     const raw = window.Telegram?.WebApp?.initData
@@ -26,18 +27,19 @@ function readTelegramName(): string | null {
 }
 
 export default function Home() {
-    const [status, setStatus] = useState<LoginStatus>('pending')
-    const [name, setName] = useState<string | null>(null)
-
-    useEffect(() => {
-        const telegramName = readTelegramName()
-        if (window.Telegram?.WebApp?.initData) {
-            setName(telegramName)
-            setStatus('in-telegram')
-        } else {
-            setStatus('outside-telegram')
-        }
-    }, [])
+    const telegramName = useSyncExternalStore(
+        () => () => {},
+        () => window.Telegram?.WebApp?.initData ? (readTelegramName() ?? '') : null,
+        () => PENDING_SNAPSHOT,
+    )
+    const status: LoginStatus = telegramName === PENDING_SNAPSHOT
+        ? 'pending'
+        : telegramName === null
+            ? 'outside-telegram'
+            : 'in-telegram'
+    const name = typeof telegramName === 'string' && telegramName !== PENDING_SNAPSHOT
+        ? telegramName
+        : null
 
     return (
         <div className="flex flex-col gap-6 py-6">

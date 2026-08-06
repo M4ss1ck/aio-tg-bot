@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { domain } from '../config/constants'
 
 export const signatureFunc = async (msgId: number, chatId: number, userId: number, joinTime: number): Promise<string> => {
-    let signOri = `${msgId}, ${chatId}, ${userId}, ${joinTime}`
+    const signOri = `${msgId}, ${chatId}, ${userId}, ${joinTime}`
     const sign = crypto.createHmac("sha256", process.env.TGWD_SECRET || "").update(signOri).digest('hex')
     return sign
 }
@@ -31,51 +31,6 @@ export function setRango(rep: number) {
     else
         return 'SECUAZ DE ETECSA'
 }
-
-function adornarRango(rango: string) {
-    let rangoAdornado
-    switch (rango) {
-        case 'ADMIN EMPODERADO':
-            rangoAdornado = '🦾 ADMIN EMPODERADO'
-            break
-        case 'JOHN WICK ':
-            rangoAdornado = '✏️ JOHN WICK '
-            break
-        case 'FAMILIA (A LO TORETTO)':
-            rangoAdornado = '👨‍👩‍👧‍👦 FAMILIA (A LO TORETTO)'
-            break
-        case 'ESTRELLA EN ASCENSO':
-            rangoAdornado = '⭐️ ESTRELLA EN ASCENSO'
-            break
-        case 'VICIOSO':
-            rangoAdornado = '🤓 VICIOSO'
-            break
-        case 'GRACIOSO (PERO NO TANTO)':
-            rangoAdornado = '🤡 GRACIOSO (PERO NO TANTO)'
-            break
-        case 'DESCONOCIDO':
-            rangoAdornado = '👤 DESCONOCIDO'
-            break
-        case 'REGGAETONERO':
-            rangoAdornado = '💩 REGGAETONERO'
-            break
-        case 'LATINOAMERICANO':
-            rangoAdornado = '👨‍🦯 LATINOAMERICANO'
-            break
-        case 'YACEL':
-            rangoAdornado = '💃 YACEL'
-            break
-        case 'SECUAZ DE ETECSA':
-            rangoAdornado = '🦹‍♂️ SECUAZ DE ETECSA'
-            break
-
-        default:
-            rangoAdornado = '💩'
-            break
-    }
-    return rangoAdornado
-}
-
 
 export const padTo2Digits = (num: number) => {
     return num.toString().padStart(2, '0')

@@ -8,6 +8,26 @@ const urban = new Composer<MyContext>()
 
 const escape = (s: string) => s.replace(/\[|\]|<|>/g, '')
 
+type UrbanDefinition = {
+    definition: string
+    example?: string
+}
+
+type UrbanSearchResponse = {
+    list: UrbanDefinition[]
+}
+
+function isUrbanDefinition(value: unknown): value is UrbanDefinition {
+    if (typeof value !== 'object' || value === null) return false
+    const definition = (value as { definition?: unknown }).definition
+    return typeof definition === 'string'
+}
+
+function parseStoredResults(value: string): UrbanDefinition[] {
+    const parsed: unknown = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter(isUrbanDefinition) : []
+}
+
 // Urban Dictionary
 urban.command('ud', async (ctx) => {
     const query = ctx.message?.text?.substring(4) ?? ''
@@ -16,16 +36,16 @@ urban.command('ud', async (ctx) => {
             where: {
                 query
             }
-        }).then(dict => dict ? JSON.parse(dict.response) : []).catch(e => {
-            console.log(e)
+        }).then(dict => dict ? parseStoredResults(dict.response) : []).catch((error: unknown) => {
+            console.log(error)
             return []
         })
         if (!results || results.length === 0) {
-            results = await search(query).then(async (res: any) => {
+            results = await search(query).then(async (res: UrbanSearchResponse) => {
                 await saveResultsInDB(res.list, query)
                 return res.list
-            }).catch((e: any) => {
-                console.log(e)
+            }).catch((error: unknown) => {
+                console.log(error)
                 return []
             })
         }
@@ -40,7 +60,7 @@ urban.command('ud', async (ctx) => {
         if (text.length + current.definition.length > 2035) {
             displayFullDefinition = false
             displayFullExamples = false
-        } else if (text.length + current.definition.length + current.example.length > 2035) {
+        } else if (text.length + current.definition.length + (current.example?.length ?? 0) > 2035) {
             displayFullExamples = false
         }
 
@@ -79,16 +99,16 @@ urban.callbackQuery(/^ud_(\d+)_(.+)/i, async ctx => {
                 where: {
                     query
                 }
-            }).then(dict => dict ? JSON.parse(dict.response) : []).catch(e => {
-                console.log(e)
+            }).then(dict => dict ? parseStoredResults(dict.response) : []).catch((error: unknown) => {
+                console.log(error)
                 return []
             })
             if (!results || results.length === 0) {
-                results = await search(query).then(async (res: any) => {
+                results = await search(query).then(async (res: UrbanSearchResponse) => {
                     await saveResultsInDB(res.list, query)
                     return res.list
-                }).catch((e: any) => {
-                    console.log(e)
+                }).catch((error: unknown) => {
+                    console.log(error)
                     return []
                 })
             }
@@ -101,7 +121,7 @@ urban.callbackQuery(/^ud_(\d+)_(.+)/i, async ctx => {
                 if (text.length + current.definition.length > 2035) {
                     displayFullDefinition = false
                     displayFullExamples = false
-                } else if (text.length + current.definition.length + current.example.length > 2035) {
+                } else if (text.length + current.definition.length + (current.example?.length ?? 0) > 2035) {
                     displayFullExamples = false
                 }
 

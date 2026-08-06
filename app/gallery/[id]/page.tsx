@@ -1,7 +1,6 @@
 import { prisma } from '../../../db/prisma'
 import { pathToTgLink } from '../../../utils/functions'
 import { Gallery } from '../../../components/Gallery'
-import { Back } from '../../../components/Back'
 import { PageHeading } from '../../../components/PageHeading'
 import { StateMessage } from '../../../components/StateMessage'
 
@@ -19,7 +18,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 title="Nothing here yet"
                 body="Create your gallery with the /gallery command, replying to photos."
             />
-            <Back />
         </section>
     )
 
@@ -43,9 +41,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <section className="flex flex-col gap-4 py-6">
             <PageHeading>Your Gallery</PageHeading>
             <Gallery photos={photosWithLink} />
-            <div className="flex justify-center">
-                <Back />
-            </div>
         </section>
     )
 }

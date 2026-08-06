@@ -1,5 +1,4 @@
 import Image from "next/image"
-import { Back } from "../../components/Back"
 import { PageHeading } from "../../components/PageHeading"
 
 export default function Page() {
@@ -32,8 +31,6 @@ export default function Page() {
                     I&apos;m a web developer that develops stuff for the web
                 </p>
             </div>
-
-            <Back />
         </section>
     )
 }

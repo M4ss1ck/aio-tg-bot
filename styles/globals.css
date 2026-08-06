@@ -67,4 +67,16 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+
+    footer svg animate {
+        display: none !important;
+    }
+
+    footer svg [stroke-dashoffset] {
+        stroke-dashoffset: 0 !important;
+    }
+
+    footer svg [fill-opacity] {
+        fill-opacity: 1 !important;
+    }
 }

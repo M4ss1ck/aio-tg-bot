@@ -4,6 +4,7 @@ import '@fontsource-variable/kode-mono'
 import '@fontsource/federant'
 import '../styles/globals.css'
 import { Footer } from '../components/Footer'
+import { BackLink } from '../components/BackLink'
 import { TelegramInit } from '../components/TelegramInit'
 
 export const metadata: Metadata = {
@@ -40,6 +41,7 @@ export default function RootLayout({
                         paddingRight: 'max(env(safe-area-inset-right), 1rem)',
                     }}
                 >
+                    <BackLink />
                     <main className="flex-1">{children}</main>
                     <Footer />
                 </div>

@@ -1,4 +1,3 @@
-import { Back } from "../../components/Back"
 import { PageHeading } from "../../components/PageHeading"
 
 export default async function Page() {
@@ -16,8 +15,6 @@ export default async function Page() {
                 </p>
                 <p className="font-display text-base text-other">Try it out!</p>
             </div>
-
-            <Back />
         </section>
     )
 }

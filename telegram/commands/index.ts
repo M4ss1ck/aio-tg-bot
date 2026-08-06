@@ -228,7 +228,9 @@ commands.command('set_victim', (ctx) => {
     const text = ctx.message?.text?.substring(12) ?? ''
     if (ctx.from?.id.toString() === my_id) {
         victim = text.match(/\d+/g)?.[0] ?? ''
-        victim !== '' && ctx.reply(ctx.t('Ahora {{victim}} es la victima', { victim })!)
+        if (victim !== '') {
+            ctx.reply(ctx.t('Ahora {{victim}} es la victima', { victim })!)
+        }
     }
 })
 
@@ -263,9 +265,10 @@ commands.command('run', async (ctx) => {
                 here: ctx.chat?.id,
             })
         }
-        catch (error: any) {
-            if ('message' in error)
+        catch (error: unknown) {
+            if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
                 ctx.reply(error.message)
+            }
         }
     }
     else {

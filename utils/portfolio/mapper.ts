@@ -96,5 +96,7 @@ export function isPayloadProjectsResponse(
     value: unknown,
 ): value is PayloadProjectsResponse {
     if (typeof value !== "object" || value === null) return false
-    return Array.isArray((value as { docs?: unknown }).docs)
+    const docs = (value as { docs?: unknown }).docs
+    return Array.isArray(docs)
+        && docs.every((doc) => typeof doc === "object" && doc !== null && !Array.isArray(doc))
 }

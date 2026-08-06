@@ -11,6 +11,26 @@ import { localDB } from "../../db/local";
 const ai = new Composer<MyContext>();
 const apiKey = process.env.OPENROUTER_API_KEY;
 
+type AiContent =
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string } }
+
+type AiRequestBody = {
+    model: string
+    messages: Array<{ role: "user"; content: AiContent[] }>
+}
+
+type AiResponse = {
+    result?: { response?: unknown; content?: unknown }
+    response?: unknown
+    content?: unknown
+    choices?: Array<{ message?: { content?: unknown } }>
+}
+
+function firstString(...values: unknown[]): string | undefined {
+    return values.find((value): value is string => typeof value === "string")
+}
+
 // Initialize premium users set if not exists
 if (!localDB.has('premiumUsers')) {
     localDB.set('premiumUsers', new Set<string>());
@@ -254,7 +274,7 @@ ai.command(["ai", "ia"], async (ctx) => {
 
     if (sanitizedInput.trim().length > 2) {
         try {
-            let content: any[] = [{
+             const content: AiContent[] = [{
                 type: "text",
                 text: sanitizedInput
             }];
@@ -332,10 +352,10 @@ ai.command(["ai", "ia"], async (ctx) => {
             const provider = modelObj?.provider || "openrouter";
 
             let apiUrl: string;
-            let headers: any;
-            let requestBody: any;
+             let headers: Record<string, string>;
+             let requestBody: AiRequestBody;
 
-            const attemptApiCall = async (currentModel: string, currentProvider: string): Promise<any> => {
+             const attemptApiCall = async (currentModel: string, currentProvider: string): Promise<{ data: AiResponse }> => {
                 if (currentProvider === "cloudflare") {
                     if (!cloudflareApiToken || !cloudflareAccountId) {
                         throw new Error("Cloudflare API credentials not configured");
@@ -372,7 +392,7 @@ ai.command(["ai", "ia"], async (ctx) => {
                 });
             };
 
-            let res: any;
+             let res: { data: AiResponse };
             let finalProvider = provider;
 
             try {
@@ -383,7 +403,7 @@ ai.command(["ai", "ia"], async (ctx) => {
                 // Attempt fallback to a free model if the current model failed
                 const fallbackModel = aiModels.find(ai =>
                     !ai.premium && // Must be free
-                    (!content.some((c: any) => c.type === "image_url") || ai.image) // Must support images if needed
+                     (!content.some((c) => c.type === "image_url") || ai.image) // Must support images if needed
                 );
 
                 if (fallbackModel) {
@@ -410,14 +430,16 @@ ai.command(["ai", "ia"], async (ctx) => {
             // Handle different response structures based on provider
             if (finalProvider === "cloudflare") {
                 // Cloudflare API response structure
-                aiResponse = res.data?.result?.response ||
-                    res.data?.response ||
-                    res.data?.result?.content ||
-                    res.data?.content ||
-                    res.data?.choices?.[0]?.message?.content; // Fallback to OpenRouter structure
+                aiResponse = firstString(
+                    res.data.result?.response,
+                    res.data.response,
+                    res.data.result?.content,
+                    res.data.content,
+                    res.data.choices?.[0]?.message?.content,
+                )
             } else {
                 // OpenRouter API response structure
-                aiResponse = res.data?.choices?.[0]?.message?.content;
+                aiResponse = firstString(res.data.choices?.[0]?.message?.content)
             }
 
             logger.info(`AI response: ${aiResponse}`);
