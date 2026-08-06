@@ -5,8 +5,8 @@ import { Card } from './Card'
 
 export const HomeCards = () => {
     return (
-        <section className="p-6">
-            <div className="container grid grid-cols-1 gap-6 mx-auto">
+        <section>
+            <div className="grid grid-cols-1 gap-4">
                 <Link href={"/bots"}>
                     <Card title="My Bots" icon={
                         <svg xmlns="http://www.w3.org/2000/svg" width={64} height={64} viewBox="0 0 32 32">

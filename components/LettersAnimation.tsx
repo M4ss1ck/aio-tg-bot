@@ -23,7 +23,7 @@ const LettersAnimation = ({ title }: { title: string }) => {
     return (
         <h1
             aria-label={title}
-            className="z-10 flex flex-wrap items-center justify-center text-2xl text-center uppercase md:text-5xl"
+            className="z-10 flex flex-wrap items-center justify-center font-display text-2xl uppercase"
         >
             {array.map((letter, index) => {
                 return (
@@ -32,7 +32,7 @@ const LettersAnimation = ({ title }: { title: string }) => {
                         className={
                             letter === " "
                                 ? "min-w-[1rem]"
-                                : "animateletter transition duration-300 hover:skew-y-12 hover:even:-skew-y-12 hover:-translate-y-16 hover:even:-translate-y-14 hover:scale-150 text-primario dark:text-secundario min-w-[1rem] cursor-default"
+                                : "animateletter text-other min-w-[1rem] cursor-default"
                         }
                         style={{ visibility: 'hidden' }}
                     >
