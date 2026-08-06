@@ -90,6 +90,23 @@ test("getProjects follows pagination until hasNextPage is false", async () => {
     assert.equal(new URL(requested[1]).searchParams.get("page"), "2")
 })
 
+test("getProjects rejects an incomplete collection at the pagination cap", async () => {
+    process.env.PORTFOLIO_API_URL = BASE
+    let requests = 0
+
+    await withStubbedFetch(
+        () => {
+            requests += 1
+            return payloadPage([{ id: requests, title: `Project ${requests}` }], true)
+        },
+        async () => {
+            await assert.rejects(() => getProjects("en"), ProjectsUnavailableError)
+        },
+    )
+
+    assert.equal(requests, 20)
+})
+
 test("getProjects sends the required cache options", async () => {
     process.env.PORTFOLIO_API_URL = BASE
     const original = globalThis.fetch

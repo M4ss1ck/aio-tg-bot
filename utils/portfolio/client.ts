@@ -105,6 +105,11 @@ export async function getProjects(
         }
 
         if (body.hasNextPage !== true) break
+        if (page === MAX_PAGES) {
+            throw new ProjectsUnavailableError(
+                `Portfolio API exceeded the pagination limit for locale ${locale}`,
+            )
+        }
     }
 
     return orderProjects(collected)
