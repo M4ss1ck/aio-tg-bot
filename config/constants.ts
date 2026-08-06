@@ -7,28 +7,6 @@ export const photoLimitPerUser = 20
 export const cloudflareApiToken = process.env.CLOUDFLARE_API_TOKEN
 export const cloudflareAccountId = process.env.CLOUDFLARE_ACCOUNT_ID
 
-export const projectList = [
-    'calc.xdc',
-    'cell-counting',
-    'chain-reaction',
-    'ciec-frontend-gatsby',
-    'gatsby-cv-maker',
-    'gatsby-gamebook',
-    'massick-portfolio',
-    'massick-portfolio-2',
-    'nextjs-blog-template',
-    'opendrift-script-generator',
-]
-export const botList = [
-    'aio-tg-bot',
-    'anime-bot',
-    'bot-manager',
-    'bot-monorepo',
-    'dead-bots',
-    'longPollRobot',
-    'mention-bot',
-]
-
 export const aiModels = [
     {
         model: "qwen/qwen2.5-vl-72b-instruct:free",
