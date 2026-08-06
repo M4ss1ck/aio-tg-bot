@@ -40,19 +40,19 @@ const renderSocialIcon = (component: string) => {
 
 export const Footer = () => {
     return (
-        <footer className="sticky bottom-0 z-50 w-full text-lg font-bold text-center text-telegram-hint bg-telegram-secondary-bg">
-            <div className="flex flex-col items-center max-w-3xl px-4 py-6 mx-auto space-y-6 md:flex-row md:justify-center sm:px-6 lg:max-w-5xl md:space-y-0 md:gap-4">
-                <p className="">
+        <footer className="mt-10 w-full border-t border-white/10 pt-4">
+            <div className="flex flex-col items-center gap-3">
+                <p className="font-display text-xs uppercase tracking-widest text-foreground/70">
                     Follow Me
                 </p>
 
-                <ul className="flex flex-row flex-wrap space-x-2">
+                <ul className="flex flex-row flex-wrap items-center justify-center gap-2">
                     {socialLinks.map(({ component, href, title }, index) => (
                         <li key={index}>
                             <a
                                 href={href}
                                 target="_blank"
-                                className="block p-1 text-xl transition duration-150"
+                                className="flex size-11 items-center justify-center rounded-lg text-2xl text-foreground/80"
                                 rel="noopener noreferrer"
                                 title={title}
                             >
