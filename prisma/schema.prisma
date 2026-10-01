@@ -22,7 +22,7 @@ model Bot {
   connectingAt  DateTime?
   lastUpdateId  Int?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 }
 
 model ManagedCloneAttempt {

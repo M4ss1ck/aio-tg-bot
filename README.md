@@ -21,7 +21,7 @@ Full-featured constantly-evolving Telegram bot with WebApp support and a `/clone
 | Polling | `pnpm dev` → `telegram/runner/polling.ts` (uses `bot.start()`) | Local dev, no public URL needed |
 | Webhook | Next.js POST at `/api/bot` via grammY's `webhookCallback` | Production + `pnpm dev:next` |
 
-Cloned bots run only in webhook mode at `/api/token/[token]`.
+Cloned bots are webhook-only: manual clones keep `/api/token/[token]`, managed clones use `/api/clones/[id]` with a per-clone webhook secret.
 
 ## Development
 
@@ -140,6 +140,28 @@ The main bot — not the clone — must be allowed to manage bots. In the BotFat
 - the manual path is offered instead with a reason → bot management is off, enable it in BotFather and retry.
 
 Do not check this by calling the Bot API with the token pasted into a shell command: that writes the token into shell history and process listings. The project's own scripts read `TOKEN` from the environment instead.
+
+### Schema push before deploy
+
+Managed clone onboarding adds columns to `Bot` (`telegramId`, `webhookSecret`, `connected`, `connectingAt`, `lastUpdateId`, `quarantined`, `createdAt`, `updatedAt`), makes `Bot.token` nullable, and creates the `ManagedCloneAttempt` table. Nothing applies this for you: the Dockerfile builder runs only `prisma-generate` and `build-only`, never `db push`. Apply it to production before deploying or restarting the app, because the new code queries those columns.
+
+With `DATABASE_URL` pointing at production, preview the SQL first:
+
+```bash
+pnpm exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
+```
+
+Expect only `ALTER TABLE "Bot" ADD COLUMN ...` lines, `ALTER COLUMN "token" DROP NOT NULL`, `CREATE TABLE "ManagedCloneAttempt"` and `CREATE UNIQUE INDEX "Bot_telegramId_key"`. If the preview contains any `DROP COLUMN` or `DROP TABLE`, stop: the production database has drifted from this schema.
+
+Then push it:
+
+```bash
+pnpm prisma-push --accept-data-loss
+```
+
+`--accept-data-loss` is needed because Prisma warns about every new unique index ("If there are existing duplicate values, this will fail"). Here it is safe: `telegramId` is a new column, so every existing row holds `NULL`, and Postgres allows any number of `NULL`s under a unique index. No existing row or column is removed. Existing clone rows keep their token and keep working on `/api/token/[token]`.
+
+After the push, let Coolify redeploy or restart the Compose `app` service; startup then registers the main webhook as usual. The BotFather management permission above and the live checklist below are still required. The schema push alone does not make the flow live.
 
 ### `managed_bot` update subscription
 
