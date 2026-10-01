@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import { connect } from 'node:net'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { getMigrateDir, migrateDatabase, runPrisma, shouldMigrateOnStart } from './migrate-database.mjs'
 
 const DEFAULT_TG_API = 'https://api.telegram.org'
 
@@ -19,6 +20,8 @@ export const ALL_UPDATE_TYPES = [
     'business_message',
     'edited_business_message',
     'deleted_business_messages',
+    'guest_message',
+    'stopped_message_generation',
     'inline_query',
     'chosen_inline_result',
     'callback_query',
@@ -28,9 +31,11 @@ export const ALL_UPDATE_TYPES = [
     'poll',
     'poll_answer',
     'my_chat_member',
+    'managed_bot',
     'chat_join_request',
     'chat_boost',
     'removed_chat_boost',
+    'subscription',
     'chat_member',
     'message_reaction',
     'message_reaction_count',
@@ -175,6 +180,17 @@ export function startNextServer() {
 
 export async function main() {
     const config = getWebhookStartupConfig()
+
+    // Schema first: the app queries the new columns as soon as it serves a
+    // request. A failed migration throws, and the container exits instead of
+    // serving against a stale schema.
+    if (shouldMigrateOnStart(process.env.MIGRATE_ON_START)) {
+        const cwd = getMigrateDir()
+        await migrateDatabase({ run: (args) => runPrisma(cwd, args) })
+    } else {
+        console.log('[startup] Skipping database migrations')
+    }
+
     startNextServer()
 
     // Webhook registration must not block or abort the server: a transient

@@ -86,5 +86,15 @@
   "{{user}} is AFK since {{time}} {{reason}}": "{{user}} has been AFK for {{time}}\nReason: {{reason}}",
   "You need to write more than that": "You need to write more than that",
   "Sorry, there was an error processing your request.": "Sorry, there was an error processing your request.",
-  "API key not set. Please contact the bot owner": "API key not set. Please contact the bot owner"
+  "API key not set. Please contact the bot owner": "API key not set. Please contact the bot owner",
+  "clone_managed_manual_hint": "Send me the token BotFather gave you right after /clone, e.g. /clone 1234567890:AA…",
+  "clone_managed_offer": "Tap the button below to create your bot in Telegram. Confirm the name and username there and I will connect it automatically. No token needed.",
+  "clone_managed_group_redirect": "Please run /clone in a private chat with me so I can connect the bot to your account.",
+  "clone_managed_manual_fallback": "Automatic bot creation is not available right now. You can still connect a bot manually: send me the token from BotFather with /clone.",
+  "clone_managed_connection_failed": "Your bot was created, but I could not connect it automatically, so it is not ready yet. Please run /clone again or use the manual token option.",
+  "clone_managed_expired": "Your clone request expired. Please run /clone again.",
+  "clone_managed_owner_change": "An ownership change was detected for your clone. Automatic management is paused and the operator was notified.",
+  "clone_managed_create_button": "Create bot in Telegram",
+  "clone_managed_open_chat_button": "Open private chat",
+  "clone_managed_success": "Your bot @{{username}} is ready!\nOpen it here: https://t.me/{{username}}"
 }

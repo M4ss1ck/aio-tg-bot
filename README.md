@@ -21,7 +21,7 @@ Full-featured constantly-evolving Telegram bot with WebApp support and a `/clone
 | Polling | `pnpm dev` → `telegram/runner/polling.ts` (uses `bot.start()`) | Local dev, no public URL needed |
 | Webhook | Next.js POST at `/api/bot` via grammY's `webhookCallback` | Production + `pnpm dev:next` |
 
-Cloned bots run only in webhook mode at `/api/token/[token]`.
+Cloned bots are webhook-only: manual clones keep `/api/token/[token]`, managed clones use `/api/clones/[id]` with a per-clone webhook secret.
 
 ## Development
 
@@ -64,7 +64,7 @@ For Redis-backed sessions while running on the host, set `REDIS_URL=redis://loca
 # Install dependencies
 pnpm install
 
-# Generate Prisma client and push schema
+# Generate Prisma client and apply migrations
 pnpm prisma
 
 # Polling mode (no webhook needed)
@@ -72,6 +72,23 @@ pnpm dev
 
 # Webhook mode via Next.js (sets webhook, then starts the dev server)
 pnpm dev:next
+```
+
+### Database migrations
+
+The schema lives in `prisma/schema.prisma` and every change to it ships as a migration in `prisma/migrations/`. Production applies them on its own (see [Docker deployment](#docker-deployment)), so a schema change is only deployable once its migration is committed:
+
+```bash
+# After editing prisma/schema.prisma: write and apply prisma/migrations/<timestamp>_<name>/
+pnpm prisma-migrate --name <what_changed>
+```
+
+`pnpm prisma-deploy` applies pending migrations to `DATABASE_URL` exactly as production does. A local database created earlier with `prisma db push` is adopted automatically (see below). If it already has columns from a newer schema, `prisma-deploy` stops with "column already exists"; reset the local database with `pnpm exec prisma migrate reset`.
+
+Two tests need a real Postgres and are skipped without one: the migrations must reproduce `schema.prisma`, and a populated pre-migrations database must be adopted without losing rows. Point `TEST_DATABASE_URL` at a scratch database. **It is wiped**, and a `<name>_shadow` database is created beside it:
+
+```bash
+TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5433/tgbot_test pnpm test
 ```
 
 ### Webhook setup
@@ -99,6 +116,7 @@ Required Coolify dashboard variables:
 Optional Coolify dashboard variables:
 
 - `SET_WEBHOOK_ON_START` (defaults to `true`; set to `false` to skip startup webhook registration)
+- `MIGRATE_ON_START` (defaults to `true`; set to `false` to skip applying database migrations at startup)
 - `TG_WEBHOOK_SECRET` (shared secret used to verify Telegram webhook requests; leave unset to disable verification)
 - `OPENROUTER_API_KEY`
 - `CLOUDFLARE_API_TOKEN`
@@ -115,8 +133,67 @@ Do not publish a host port for the production app. The compose file exposes cont
 docker compose up --build -d
 ```
 
-On production startup, `scripts/start-production.mjs` launches the Next.js standalone server and, once it is listening, registers `https://<NEXT_PUBLIC_DOMAIN>/api/bot` with Telegram (dropping pending updates and subscribing to all update types). Webhook registration is best-effort: if it fails, the server keeps running. For manual repair from your local machine, load the production env and run:
+On production startup, `scripts/start-production.mjs` first applies pending database migrations (`prisma migrate deploy`, run from `/app/migrate` in the image), then launches the Next.js standalone server and, once it is listening, registers `https://<NEXT_PUBLIC_DOMAIN>/api/bot` with Telegram (dropping pending updates and subscribing to all update types). Webhook registration is best-effort: if it fails, the server keeps running. Migrations are not: if one fails, the container exits before the server starts and the Prisma error is in the Coolify logs, so the app never serves against a schema it does not match. Prisma records the failed migration, and later starts stop with `P3009` until it is resolved (see Prisma's "Resolving migration issues" docs).
+
+For manual repair from your local machine, load the production env and run:
 
 ```bash
 pnpm set-webhook
 ```
+
+Production's database predates migrations (it was created with `prisma db push`), so it has tables but no `_prisma_migrations` history and Prisma refuses it with `P3005`. The first start of a migrations-aware image detects exactly that error, marks `prisma/migrations/0_init` (the schema production already had) as applied, and then applies the newer migrations. Every later start only applies what is pending. After migrating, startup compares the database with `schema.prisma` and logs `Database schema is up to date`, or a `WARNING` plus the differences if the database had drifted.
+
+## Managed clone onboarding
+
+Users can create a clone without ever seeing or pasting a bot token. Everything happens inside Telegram:
+
+1. The user sends `/clone` in a **private chat** with the main bot.
+2. The main bot replies with a **Create bot in Telegram** inline URL button. Telegram opens its own managed-bot creation flow with the main bot named as manager.
+3. The user picks the clone's display name and username and confirms creation in Telegram.
+4. Telegram sends the main bot a `managed_bot` update. The main bot fetches the new bot's token from Telegram, stores it, **registers the clone's webhook automatically**, and replies with the clone's username and a link to open it.
+
+No token is copied into the chat, and there is no separate webhook button to press. The manual route `/clone <token>` still works unchanged for users who already created a bot in BotFather, and clones created that way keep their existing webhook route. A `/clone` sent in a group chat gets a link back to a private conversation with the main bot.
+
+### Operator prerequisites
+
+The main bot — not the clone — must be allowed to manage bots. In the BotFather Mini App, open the main bot and enable **bot management** for it. The button is only offered when the main bot's `getMe` reports `can_manage_bots: true`, so the credential-free way to verify the setting is to send `/clone` in a private chat with the main bot:
+
+- the **Create bot in Telegram** button appears → bot management is enabled and the flow is available;
+- the manual path is offered instead with a reason → bot management is off, enable it in BotFather and retry.
+
+Do not check this by calling the Bot API with the token pasted into a shell command: that writes the token into shell history and process listings. The project's own scripts read `TOKEN` from the environment instead.
+
+### Schema changes
+
+Managed clone onboarding adds columns to `Bot` (`telegramId`, `webhookSecret`, `connected`, `connectingAt`, `lastUpdateId`, `quarantined`, `createdAt`, `updatedAt`), makes `Bot.token` nullable, and creates the `ManagedCloneAttempt` table (`prisma/migrations/1_managed_clone_onboarding`). Deploying applies it automatically: no Prisma command is run by hand. The first startup log should show `0_init` being marked as applied, then `1_managed_clone_onboarding` applied, then `Database schema is up to date`. Existing clone rows keep their token and keep working on `/api/token/[token]`.
+
+The BotFather management permission above and the live checklist below are still required. The migration alone does not make the flow live.
+
+### `managed_bot` update subscription
+
+The main bot receives `managed_bot` updates, so every registration path must subscribe to it:
+
+| Path | Where |
+| --- | --- |
+| Webhook registration | `scripts/set-webhook.ts` (`API_CONSTANTS.ALL_UPDATE_TYPES`) |
+| Polling | `telegram/runner/polling.ts` (`API_CONSTANTS.ALL_UPDATE_TYPES`) |
+| Production startup | `ALL_UPDATE_TYPES` in `scripts/start-production.mjs` (hand-maintained, kept in sync by `scripts/start-production.test.ts`) |
+
+If you ever register the main webhook by other means, re-run `pnpm set-webhook` so the update subscription includes `managed_bot`.
+
+### Live test checklist
+
+Run this before calling the flow production-ready, using a **fresh disposable Telegram test account** and a disposable clone name/username — not your own account, and not a clone you care about.
+
+- [ ] Telegram client version used for the test (platform + build).
+- [ ] `/clone` in a private chat with the main bot shows the **Create bot in Telegram** URL button.
+- [ ] Tapping it opens Telegram's managed-bot creation flow with the main bot as manager.
+- [ ] Creation confirmed in Telegram; record the created clone's **bot ID** (the numeric ID, never the token).
+- [ ] Main bot's reply captured: it should name the clone's username and include a working link.
+- [ ] Clone webhook registered automatically — no "Set Webhook" button appeared, and the clone answers a message.
+- [ ] `/clone <token>` with a BotFather token still connects a bot as before.
+- [ ] Nothing in the notes, screenshots, or issue contains a bot token.
+
+Record only the client version, bot ID, the user-visible reply, and the webhook outcome.
+
+**Verification status:** the Telegram managed-bot flow and the BotFather permission requirement are taken from Telegram's documented behavior (see [the research note](docs/research/hermes-managed-bot-clone.md) and [issue #3](https://github.com/M4ss1ck/aio-tg-bot/issues/3)). No live managed-bot creation has been performed yet, so client compatibility and the main bot's manager permission are still unverified implementation-time checks.
