@@ -86,5 +86,15 @@
   "{{user}} is AFK since {{time}} {{reason}}": "{{user}} no está disponible desde {{time}}\nRazón: {{reason}}",
   "You need to write more than that": "Debes escribir más",
   "Sorry, there was an error processing your request.": "Lo siento, hubo un error procesando tu petición.",
-  "API key not set. Please contact the bot owner": "API key no establecida. Por favor, contacta al dueño del bot (que te va a ignorar)"
+  "API key not set. Please contact the bot owner": "API key no establecida. Por favor, contacta al dueño del bot (que te va a ignorar)",
+  "clone_managed_manual_hint": "Envíame el token que te dio BotFather justo después de /clone, por ejemplo /clone 1234567890:AA…",
+  "clone_managed_offer": "Toca el botón de abajo para crear tu bot en Telegram. Confirma allí el nombre y el nombre de usuario y lo conectaré automáticamente. No necesitas ningún token.",
+  "clone_managed_group_redirect": "Ejecuta /clone en un chat privado conmigo para que pueda conectar el bot a tu cuenta.",
+  "clone_managed_manual_fallback": "La creación automática de bots no está disponible en este momento. Todavía puedes conectar un bot manualmente: envíame el token de BotFather con /clone.",
+  "clone_managed_connection_failed": "Tu bot fue creado, pero no pude conectarlo automáticamente, así que todavía no está listo. Ejecuta /clone otra vez o usa la opción manual con el token.",
+  "clone_managed_expired": "Tu solicitud de clon expiró. Ejecuta /clone otra vez.",
+  "clone_managed_owner_change": "Se detectó un cambio de propietario en tu clon. La gestión automática está pausada y el operador fue notificado.",
+  "clone_managed_create_button": "Crear bot en Telegram",
+  "clone_managed_open_chat_button": "Abrir chat privado",
+  "clone_managed_success": "¡Tu bot @{{username}} está listo!\nÁbrelo aquí: https://t.me/{{username}}"
 }

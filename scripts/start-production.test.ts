@@ -10,6 +10,11 @@ import {
 } from './start-production.mjs'
 
 test('ALL_UPDATE_TYPES stays in sync with grammy (it cannot be imported at runtime)', () => {
+    assert.ok(
+        API_CONSTANTS.ALL_UPDATE_TYPES.includes('managed_bot'),
+        'grammy must expose the managed_bot update type',
+    )
+    assert.ok(ALL_UPDATE_TYPES.includes('managed_bot'), 'the production update list must subscribe to managed_bot')
     assert.deepEqual(ALL_UPDATE_TYPES, [...API_CONSTANTS.ALL_UPDATE_TYPES])
 })
 

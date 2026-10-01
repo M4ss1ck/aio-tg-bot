@@ -12,9 +12,28 @@ datasource db {
 }
 
 model Bot {
-  id    String @id @default(cuid())
-  token String @unique
-  owner String
+  id            String    @id @default(cuid())
+  token         String?   @unique
+  owner         String
+  telegramId    String?   @unique
+  webhookSecret String?
+  quarantined   Boolean   @default(false)
+  connected     Boolean   @default(false)
+  connectingAt  DateTime?
+  lastUpdateId  Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ManagedCloneAttempt {
+  ownerId       String   @id
+  generation    String
+  chatId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  expiresAt     DateTime
+  status        String   @default("pending")
+  botTelegramId String?
 }
 
 model User {

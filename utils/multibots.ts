@@ -36,14 +36,14 @@ const domain = process.env.NEXT_PUBLIC_DOMAIN!
 export const setWH = async (token: string) => {
     try {
         const parsedDomain = domain.replace(/^http(s)?:\/\//, '')
+        const botPrefix = token.split(':')[0]
         const url = `https://api.telegram.org/bot${token}/setWebhook?url=https://${parsedDomain}/api/token/${token}&drop_pending_updates=True`
-        logger.info('WH url: ', url)
+        logger.info(`Setting webhook for bot ${botPrefix}`)
         const webhook = await axios(url)
-        logger.success(webhook.data)
+        logger.success(`Webhook response ok=${webhook.data?.ok ?? 'unknown'} for bot ${botPrefix}`)
         return !!webhook.data.ok
-    } catch (error) {
+    } catch {
         logger.error('Error in setWH')
-        logger.error(error)
         return false
     }
 }
@@ -121,10 +121,43 @@ export const loadBot = async (id: string) => {
                     id: id
                 }
             })
-            return botInDB ? await createBot(botInDB.token) : null
+            return botInDB?.token ? await createBot(botInDB.token) : null
         }
     } catch (error) {
         logger.error(error)
         return null
+    }
+}
+
+export interface CloneBotApi {
+    getMe(): Promise<{ id: number; username?: string }>
+    setWebhook(url: string, options?: { secret_token?: string; drop_pending_updates?: boolean }): Promise<unknown>
+    deleteWebhook?(): Promise<unknown>
+}
+
+export const buildManagedCloneWebhookUrl = (routeId: string) => {
+    const host = String(domain ?? '').replace(/^https?:\/\//i, '').replace(/\/$/, '')
+    return `https://${host}/api/clones/${routeId}`
+}
+
+export const registerManagedCloneWebhook = async (
+    api: CloneBotApi,
+    routeId: string,
+    secret: string,
+): Promise<boolean> => {
+    try {
+        const result = await api.setWebhook(buildManagedCloneWebhookUrl(routeId), {
+            secret_token: secret,
+            drop_pending_updates: false,
+        })
+        if (result !== true) {
+            logger.error('Managed clone webhook registration was not accepted')
+            return false
+        }
+        logger.success('Managed clone webhook registered')
+        return true
+    } catch {
+        logger.error('Failed to register managed clone webhook')
+        return false
     }
 }

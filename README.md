@@ -120,3 +120,52 @@ On production startup, `scripts/start-production.mjs` launches the Next.js stand
 ```bash
 pnpm set-webhook
 ```
+
+## Managed clone onboarding
+
+Users can create a clone without ever seeing or pasting a bot token. Everything happens inside Telegram:
+
+1. The user sends `/clone` in a **private chat** with the main bot.
+2. The main bot replies with a **Create bot in Telegram** inline URL button. Telegram opens its own managed-bot creation flow with the main bot named as manager.
+3. The user picks the clone's display name and username and confirms creation in Telegram.
+4. Telegram sends the main bot a `managed_bot` update. The main bot fetches the new bot's token from Telegram, stores it, **registers the clone's webhook automatically**, and replies with the clone's username and a link to open it.
+
+No token is copied into the chat, and there is no separate webhook button to press. The manual route `/clone <token>` still works unchanged for users who already created a bot in BotFather, and clones created that way keep their existing webhook route. A `/clone` sent in a group chat gets a link back to a private conversation with the main bot.
+
+### Operator prerequisites
+
+The main bot — not the clone — must be allowed to manage bots. In the BotFather Mini App, open the main bot and enable **bot management** for it. The button is only offered when the main bot's `getMe` reports `can_manage_bots: true`, so the credential-free way to verify the setting is to send `/clone` in a private chat with the main bot:
+
+- the **Create bot in Telegram** button appears → bot management is enabled and the flow is available;
+- the manual path is offered instead with a reason → bot management is off, enable it in BotFather and retry.
+
+Do not check this by calling the Bot API with the token pasted into a shell command: that writes the token into shell history and process listings. The project's own scripts read `TOKEN` from the environment instead.
+
+### `managed_bot` update subscription
+
+The main bot receives `managed_bot` updates, so every registration path must subscribe to it:
+
+| Path | Where |
+| --- | --- |
+| Webhook registration | `scripts/set-webhook.ts` (`API_CONSTANTS.ALL_UPDATE_TYPES`) |
+| Polling | `telegram/runner/polling.ts` (`API_CONSTANTS.ALL_UPDATE_TYPES`) |
+| Production startup | `ALL_UPDATE_TYPES` in `scripts/start-production.mjs` (hand-maintained, kept in sync by `scripts/start-production.test.ts`) |
+
+If you ever register the main webhook by other means, re-run `pnpm set-webhook` so the update subscription includes `managed_bot`.
+
+### Live test checklist
+
+Run this before calling the flow production-ready, using a **fresh disposable Telegram test account** and a disposable clone name/username — not your own account, and not a clone you care about.
+
+- [ ] Telegram client version used for the test (platform + build).
+- [ ] `/clone` in a private chat with the main bot shows the **Create bot in Telegram** URL button.
+- [ ] Tapping it opens Telegram's managed-bot creation flow with the main bot as manager.
+- [ ] Creation confirmed in Telegram; record the created clone's **bot ID** (the numeric ID, never the token).
+- [ ] Main bot's reply captured: it should name the clone's username and include a working link.
+- [ ] Clone webhook registered automatically — no "Set Webhook" button appeared, and the clone answers a message.
+- [ ] `/clone <token>` with a BotFather token still connects a bot as before.
+- [ ] Nothing in the notes, screenshots, or issue contains a bot token.
+
+Record only the client version, bot ID, the user-visible reply, and the webhook outcome.
+
+**Verification status:** the Telegram managed-bot flow and the BotFather permission requirement are taken from Telegram's documented behavior (see [the research note](docs/research/hermes-managed-bot-clone.md) and [issue #3](https://github.com/M4ss1ck/aio-tg-bot/issues/3)). No live managed-bot creation has been performed yet, so client compatibility and the main bot's manager permission are still unverified implementation-time checks.
