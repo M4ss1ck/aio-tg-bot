@@ -15,8 +15,9 @@
         "set-webhook": "tsx --env-file=.env scripts/set-webhook.ts",
         "studio": "prisma studio",
         "prisma-generate": "prisma generate",
-        "prisma-push": "prisma db push",
-        "prisma": "pnpm prisma-generate && pnpm prisma-push"
+        "prisma-migrate": "prisma migrate dev",
+        "prisma-deploy": "PRISMA_MIGRATE_DIR=. node --env-file-if-exists=.env scripts/migrate-database.mjs",
+        "prisma": "pnpm prisma-generate && pnpm prisma-deploy"
     },
     "dependencies": {
         "@fontsource-variable/kode-mono": "^5.1.0",

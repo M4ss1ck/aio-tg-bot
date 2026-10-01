@@ -64,7 +64,7 @@ For Redis-backed sessions while running on the host, set `REDIS_URL=redis://loca
 # Install dependencies
 pnpm install
 
-# Generate Prisma client and push schema
+# Generate Prisma client and apply migrations
 pnpm prisma
 
 # Polling mode (no webhook needed)
@@ -72,6 +72,23 @@ pnpm dev
 
 # Webhook mode via Next.js (sets webhook, then starts the dev server)
 pnpm dev:next
+```
+
+### Database migrations
+
+The schema lives in `prisma/schema.prisma` and every change to it ships as a migration in `prisma/migrations/`. Production applies them on its own (see [Docker deployment](#docker-deployment)), so a schema change is only deployable once its migration is committed:
+
+```bash
+# After editing prisma/schema.prisma: write and apply prisma/migrations/<timestamp>_<name>/
+pnpm prisma-migrate --name <what_changed>
+```
+
+`pnpm prisma-deploy` applies pending migrations to `DATABASE_URL` exactly as production does. A local database created earlier with `prisma db push` is adopted automatically (see below). If it already has columns from a newer schema, `prisma-deploy` stops with "column already exists"; reset the local database with `pnpm exec prisma migrate reset`.
+
+Two tests need a real Postgres and are skipped without one: the migrations must reproduce `schema.prisma`, and a populated pre-migrations database must be adopted without losing rows. Point `TEST_DATABASE_URL` at a scratch database. **It is wiped**, and a `<name>_shadow` database is created beside it:
+
+```bash
+TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5433/tgbot_test pnpm test
 ```
 
 ### Webhook setup
@@ -99,6 +116,7 @@ Required Coolify dashboard variables:
 Optional Coolify dashboard variables:
 
 - `SET_WEBHOOK_ON_START` (defaults to `true`; set to `false` to skip startup webhook registration)
+- `MIGRATE_ON_START` (defaults to `true`; set to `false` to skip applying database migrations at startup)
 - `TG_WEBHOOK_SECRET` (shared secret used to verify Telegram webhook requests; leave unset to disable verification)
 - `OPENROUTER_API_KEY`
 - `CLOUDFLARE_API_TOKEN`
@@ -115,11 +133,15 @@ Do not publish a host port for the production app. The compose file exposes cont
 docker compose up --build -d
 ```
 
-On production startup, `scripts/start-production.mjs` launches the Next.js standalone server and, once it is listening, registers `https://<NEXT_PUBLIC_DOMAIN>/api/bot` with Telegram (dropping pending updates and subscribing to all update types). Webhook registration is best-effort: if it fails, the server keeps running. For manual repair from your local machine, load the production env and run:
+On production startup, `scripts/start-production.mjs` first applies pending database migrations (`prisma migrate deploy`, run from `/app/migrate` in the image), then launches the Next.js standalone server and, once it is listening, registers `https://<NEXT_PUBLIC_DOMAIN>/api/bot` with Telegram (dropping pending updates and subscribing to all update types). Webhook registration is best-effort: if it fails, the server keeps running. Migrations are not: if one fails, the container exits before the server starts and the Prisma error is in the Coolify logs, so the app never serves against a schema it does not match. Prisma records the failed migration, and later starts stop with `P3009` until it is resolved (see Prisma's "Resolving migration issues" docs).
+
+For manual repair from your local machine, load the production env and run:
 
 ```bash
 pnpm set-webhook
 ```
+
+Production's database predates migrations (it was created with `prisma db push`), so it has tables but no `_prisma_migrations` history and Prisma refuses it with `P3005`. The first start of a migrations-aware image detects exactly that error, marks `prisma/migrations/0_init` (the schema production already had) as applied, and then applies the newer migrations. Every later start only applies what is pending. After migrating, startup compares the database with `schema.prisma` and logs `Database schema is up to date`, or a `WARNING` plus the differences if the database had drifted.
 
 ## Managed clone onboarding
 
@@ -141,27 +163,11 @@ The main bot — not the clone — must be allowed to manage bots. In the BotFat
 
 Do not check this by calling the Bot API with the token pasted into a shell command: that writes the token into shell history and process listings. The project's own scripts read `TOKEN` from the environment instead.
 
-### Schema push before deploy
+### Schema changes
 
-Managed clone onboarding adds columns to `Bot` (`telegramId`, `webhookSecret`, `connected`, `connectingAt`, `lastUpdateId`, `quarantined`, `createdAt`, `updatedAt`), makes `Bot.token` nullable, and creates the `ManagedCloneAttempt` table. Nothing applies this for you: the Dockerfile builder runs only `prisma-generate` and `build-only`, never `db push`. Apply it to production before deploying or restarting the app, because the new code queries those columns.
+Managed clone onboarding adds columns to `Bot` (`telegramId`, `webhookSecret`, `connected`, `connectingAt`, `lastUpdateId`, `quarantined`, `createdAt`, `updatedAt`), makes `Bot.token` nullable, and creates the `ManagedCloneAttempt` table (`prisma/migrations/1_managed_clone_onboarding`). Deploying applies it automatically: no Prisma command is run by hand. The first startup log should show `0_init` being marked as applied, then `1_managed_clone_onboarding` applied, then `Database schema is up to date`. Existing clone rows keep their token and keep working on `/api/token/[token]`.
 
-With `DATABASE_URL` pointing at production, preview the SQL first:
-
-```bash
-pnpm exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
-```
-
-Expect only `ALTER TABLE "Bot" ADD COLUMN ...` lines, `ALTER COLUMN "token" DROP NOT NULL`, `CREATE TABLE "ManagedCloneAttempt"` and `CREATE UNIQUE INDEX "Bot_telegramId_key"`. If the preview contains any `DROP COLUMN` or `DROP TABLE`, stop: the production database has drifted from this schema.
-
-Then push it:
-
-```bash
-pnpm prisma-push --accept-data-loss
-```
-
-`--accept-data-loss` is needed because Prisma warns about every new unique index ("If there are existing duplicate values, this will fail"). Here it is safe: `telegramId` is a new column, so every existing row holds `NULL`, and Postgres allows any number of `NULL`s under a unique index. No existing row or column is removed. Existing clone rows keep their token and keep working on `/api/token/[token]`.
-
-After the push, let Coolify redeploy or restart the Compose `app` service; startup then registers the main webhook as usual. The BotFather management permission above and the live checklist below are still required. The schema push alone does not make the flow live.
+The BotFather management permission above and the live checklist below are still required. The migration alone does not make the flow live.
 
 ### `managed_bot` update subscription
 

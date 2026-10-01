@@ -12,6 +12,7 @@ services:
       PORTFOLIO_API_URL: ${PORTFOLIO_API_URL:-https://www.massick.dev}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       SET_WEBHOOK_ON_START: ${SET_WEBHOOK_ON_START:-true}
+      MIGRATE_ON_START: ${MIGRATE_ON_START:-true}
       TG_WEBHOOK_SECRET: ${TG_WEBHOOK_SECRET:-}
       TG_API: ${TG_API:-https://api.telegram.org}
       TGWD_SECRET: ${TGWD_SECRET:-}

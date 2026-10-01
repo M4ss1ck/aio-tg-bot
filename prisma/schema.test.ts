@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
-// Production already holds Bot rows, and the schema is applied with `prisma db push`.
-// Postgres cannot add a required column without a default to a non-empty table, so
-// every Bot column added after the original three must be optional or defaulted.
+// Production already holds Bot rows. Postgres cannot add a required column without
+// a default to a non-empty table, so a migration adding one fails at startup: every
+// Bot column added after the original three must be optional or defaulted.
 const ORIGINAL_BOT_FIELDS = new Set(['id', 'token', 'owner'])
 
 function modelFields(schema: string, model: string) {

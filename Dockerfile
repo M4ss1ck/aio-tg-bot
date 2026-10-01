@@ -30,6 +30,16 @@ COPY . .
 RUN pnpm prisma-generate
 RUN pnpm build-only
 
+# ---- Migrator ----
+# The Next standalone output does not include the prisma CLI, so the runner gets
+# a self-contained copy (same version as the lockfile) for `migrate deploy` at
+# startup. See scripts/migrate-database.mjs.
+FROM deps AS migrator
+RUN mkdir /migrate \
+ && cd /migrate \
+ && echo '{"private":true}' > package.json \
+ && npm install --no-audit --no-fund --omit=dev "prisma@$(node -p "require('/app/node_modules/prisma/package.json').version")"
+
 # ---- Runner ----
 FROM base AS runner
 WORKDIR /app
@@ -49,6 +59,13 @@ COPY --from=builder /app/.next/static ./.next/static
 # i18next-fs-backend reads JSON locales from cwd/locales at runtime
 COPY --from=builder /app/locales ./locales
 COPY --from=builder /app/scripts/start-production.mjs ./scripts/start-production.mjs
+COPY --from=builder /app/scripts/migrate-database.mjs ./scripts/migrate-database.mjs
+
+# Applied by scripts/start-production.mjs before the server starts
+COPY --from=migrator /migrate/node_modules ./migrate/node_modules
+COPY --from=builder /app/prisma.config.ts ./migrate/prisma.config.ts
+COPY --from=builder /app/prisma/schema.prisma ./migrate/prisma/schema.prisma
+COPY --from=builder /app/prisma/migrations ./migrate/prisma/migrations
 
 RUN chown -R nextjs:nodejs /app
 
